@@ -35,22 +35,25 @@ if (player != noone)
         player.y
     );
 
+
     if (dist <= 20)
     {
-        // Slime Gel 획득
-        player.slime_gel += 1;
+        // Gold 획득
+        player.gold += gold_value;
 
 
-        // 전리품 획득 효과음
+        // 골드 획득 효과음
         audio_play_sound(
-            snd_item_pickup,
+            snd_gold_pickup,
             1,
             false
         );
 
 
         show_debug_message(
-            "Slime Gel +1"
+            "+"
+            + string(gold_value)
+            + " Gold"
         );
 
 

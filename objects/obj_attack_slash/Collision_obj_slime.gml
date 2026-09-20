@@ -10,28 +10,25 @@ var player = instance_nearest(
 
 
 // ========================
-// 플레이어가 있을 때
+// 슬라임 데미지
 // ========================
 
 if (player != noone)
 {
-    // ========================
-    // 슬라임 데미지
-    // ========================
-
     other.hp -= player.attack_damage;
-
-
-    // ========================
-    // 피격 효과
-    // ========================
 
     other.hit_flash_timer = 8;
 
+    // 슬라임 피격 효과음
+    audio_play_sound(
+        snd_slime_hit,
+        1,
+        false
+    );
+
 
     // ========================
-    // 슬라임 넉백 방향
-    // 플레이어 -> 슬라임 방향
+    // 슬라임 넉백
     // ========================
 
     var knock_dir = point_direction(
@@ -40,7 +37,6 @@ if (player != noone)
         other.x,
         other.y
     );
-
 
     other.knockback_x =
         lengthdir_x(
@@ -54,7 +50,6 @@ if (player != noone)
             knock_dir
         );
 
-
     other.knockback_timer = 5;
 
 
@@ -65,15 +60,24 @@ if (player != noone)
 }
 
 
-// ========================
+// =====================================================
 // 슬라임 사망
-// ========================
+// =====================================================
 
 if (other.hp <= 0)
 {
     var drop_x = other.x;
     var drop_y = other.y;
 
+    // ========================
+    // 슬라임 사망 효과음
+    // ========================
+
+    audio_play_sound(
+        snd_slime_death,
+        1,
+        false
+    );
 
     // ========================
     // Slime Gel - 70%
@@ -82,7 +86,7 @@ if (other.hp <= 0)
     if (irandom(99) < 70)
     {
         instance_create_layer(
-            drop_x,
+            drop_x - 12,
             drop_y,
             layer,
             obj_slime_gel
@@ -105,12 +109,31 @@ if (other.hp <= 0)
     }
 
 
+    // ========================
+    // Gold - 40%
+    // ========================
+
+    if (irandom(99) < 40)
+    {
+        instance_create_layer(
+            drop_x,
+            drop_y + 12,
+            layer,
+            obj_gold
+        );
+    }
+
+
+    // ========================
+    // 슬라임 제거
+    // ========================
+
     instance_destroy(other);
 }
 
 
 // ========================
-// Slash 제거
+// 검 공격 제거
 // ========================
 
 instance_destroy();

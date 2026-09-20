@@ -1,9 +1,176 @@
+// =====================================================
+// MINI MAP - 플레이어 중심 추적형
+// =====================================================
+
+var map_x = 20;
+var map_y = 20;
+
+var map_w = 200;
+var map_h = 120;
+
+
+// 미니맵에서 보여주는 실제 게임 범위
+var minimap_range_x = 500;
+var minimap_range_y = 300;
+
+
+// 미니맵 중앙
+var map_center_x = map_x + map_w / 2;
+var map_center_y = map_y + map_h / 2;
+
+
 // ========================
-// HP BAR
+// 미니맵 배경
 // ========================
 
+draw_set_color(c_black);
+
+draw_rectangle(
+    map_x,
+    map_y,
+    map_x + map_w,
+    map_y + map_h,
+    false
+);
+
+
+// =====================================================
+// 슬라임 표시
+// =====================================================
+
+var slime_count = instance_number(obj_slime);
+
+for (var i = 0; i < slime_count; i++)
+{
+    var slime = instance_find(obj_slime, i);
+
+    if (slime != noone)
+    {
+        // 플레이어 기준 상대 위치
+        var relative_x = slime.x - x;
+        var relative_y = slime.y - y;
+
+
+        // 미니맵 좌표로 변환
+        var monster_map_x =
+            map_center_x
+            + (relative_x / minimap_range_x)
+            * map_w;
+
+        var monster_map_y =
+            map_center_y
+            + (relative_y / minimap_range_y)
+            * map_h;
+
+
+        // 미니맵 안에 있을 때만 표시
+        if (
+            monster_map_x >= map_x
+            && monster_map_x <= map_x + map_w
+            && monster_map_y >= map_y
+            && monster_map_y <= map_y + map_h
+        )
+        {
+            draw_set_color(c_red);
+
+            draw_circle(
+                monster_map_x,
+                monster_map_y,
+                3,
+                false
+            );
+        }
+    }
+}
+
+
+// =====================================================
+// 상인 NPC 표시
+// =====================================================
+
+var npc_count = instance_number(obj_npc);
+
+for (var n = 0; n < npc_count; n++)
+{
+    var npc_map = instance_find(obj_npc, n);
+
+    if (npc_map != noone)
+    {
+        // 플레이어 기준 상대 위치
+        var npc_relative_x = npc_map.x - x;
+        var npc_relative_y = npc_map.y - y;
+
+
+        // 미니맵 좌표로 변환
+        var npc_map_x =
+            map_center_x
+            + (npc_relative_x / minimap_range_x)
+            * map_w;
+
+        var npc_map_y =
+            map_center_y
+            + (npc_relative_y / minimap_range_y)
+            * map_h;
+
+
+        // 미니맵 안에 있을 때만 표시
+        if (
+            npc_map_x >= map_x
+            && npc_map_x <= map_x + map_w
+            && npc_map_y >= map_y
+            && npc_map_y <= map_y + map_h
+        )
+        {
+            draw_set_color(c_yellow);
+
+            draw_circle(
+                npc_map_x,
+                npc_map_y,
+                4,
+                false
+            );
+        }
+    }
+}
+
+
+// =====================================================
+// 플레이어 표시
+// 항상 미니맵 중앙
+// =====================================================
+
+draw_set_color(c_lime);
+
+draw_circle(
+    map_center_x,
+    map_center_y,
+    4,
+    false
+);
+
+
+// ========================
+// 미니맵 테두리
+// ========================
+
+draw_set_color(c_white);
+
+draw_rectangle(
+    map_x,
+    map_y,
+    map_x + map_w,
+    map_y + map_h,
+    true
+);
+
+
+
+// =====================================================
+// HP BAR
+// =====================================================
+
 var bar_x = 20;
-var bar_y = 20;
+var bar_y = 155;
 
 var bar_w = 200;
 var bar_h = 20;
@@ -11,10 +178,7 @@ var bar_h = 20;
 var hp_percent = hp / max_hp;
 
 
-// ========================
-// HP BAR 배경
-// ========================
-
+// HP 바 배경
 draw_set_color(c_black);
 
 draw_rectangle(
@@ -26,10 +190,7 @@ draw_rectangle(
 );
 
 
-// ========================
 // 현재 HP
-// ========================
-
 draw_set_color(c_red);
 
 draw_rectangle(
@@ -41,10 +202,7 @@ draw_rectangle(
 );
 
 
-// ========================
-// HP BAR 테두리
-// ========================
-
+// HP 바 테두리
 draw_set_color(c_white);
 
 draw_rectangle(
@@ -56,99 +214,24 @@ draw_rectangle(
 );
 
 
-// ========================
-// HP 숫자
-// ========================
 
-draw_set_color(c_white);
-
-draw_text(
-    20,
-    48,
-    "HP: "
-    + string(hp)
-    + " / "
-    + string(max_hp)
-);
-
-
-// ========================
-// Slime Gel
-// ========================
-
-draw_text(
-    20,
-    70,
-    "Slime Gel: "
-    + string(slime_gel)
-);
-
-
-// ========================
-// Health Potion
-// ========================
-
-draw_text(
-    20,
-    90,
-    "Health Potion: "
-    + string(health_potion)
-    + " [C]"
-);
-
-
-// ========================
-// Gold
-// ========================
+// =====================================================
+// GOLD
+// =====================================================
 
 draw_set_color(c_yellow);
 
 draw_text(
     20,
-    110,
-    "Gold: "
-    + string(gold)
+    185,
+    "Gold: " + string(gold)
 );
 
 
-// ========================
-// 스탯 표시
-// ========================
 
-draw_set_color(c_white);
-
-draw_text(
-    20,
-    140,
-    "ATK: "
-    + string(attack_damage)
-);
-
-draw_text(
-    20,
-    160,
-    "DEF: "
-    + string(defense)
-);
-
-draw_text(
-    20,
-    180,
-    "Speed: "
-    + string(move_speed)
-);
-
-draw_text(
-    20,
-    200,
-    "Potion Heal: "
-    + string(potion_heal)
-);
-
-
-// ========================
-// 상인 / NPC 대화창
-// ========================
+// =====================================================
+// 상인 대화창
+// =====================================================
 
 if (dialogue_open && !is_dead)
 {
@@ -173,9 +256,10 @@ if (dialogue_open && !is_dead)
 }
 
 
-// ========================
-// 랜덤 강화 카드 화면
-// ========================
+
+// =====================================================
+// 랜덤 강화 카드
+// =====================================================
 
 if (upgrade_open)
 {
@@ -194,9 +278,11 @@ if (upgrade_open)
         (gui_h - card_h) / 2;
 
 
+    // ========================
     // 제목
-    draw_set_halign(fa_center);
+    // ========================
 
+    draw_set_halign(fa_center);
     draw_set_color(c_white);
 
     draw_text(
@@ -206,9 +292,9 @@ if (upgrade_open)
     );
 
 
-    // ========================
-    // 카드 1
-    // ========================
+    // =================================================
+    // CARD 1
+    // =================================================
 
     draw_set_color(c_black);
 
@@ -242,29 +328,19 @@ if (upgrade_open)
     var text1 = "";
 
     if (card1 == 0)
-    {
         text1 = "Attack Up\nATK +1";
-    }
 
     if (card1 == 1)
-    {
         text1 = "Max HP Up\nHP +1";
-    }
 
     if (card1 == 2)
-    {
         text1 = "Defense Up\nDEF +1";
-    }
 
     if (card1 == 3)
-    {
         text1 = "Speed Up\nSpeed +0.5";
-    }
 
     if (card1 == 4)
-    {
         text1 = "Potion Up\nHeal +1";
-    }
 
 
     draw_text(
@@ -274,9 +350,9 @@ if (upgrade_open)
     );
 
 
-    // ========================
-    // 카드 2
-    // ========================
+    // =================================================
+    // CARD 2
+    // =================================================
 
     var card2_x =
         start_x + card_w + gap;
@@ -314,29 +390,19 @@ if (upgrade_open)
     var text2 = "";
 
     if (card2 == 0)
-    {
         text2 = "Attack Up\nATK +1";
-    }
 
     if (card2 == 1)
-    {
         text2 = "Max HP Up\nHP +1";
-    }
 
     if (card2 == 2)
-    {
         text2 = "Defense Up\nDEF +1";
-    }
 
     if (card2 == 3)
-    {
         text2 = "Speed Up\nSpeed +0.5";
-    }
 
     if (card2 == 4)
-    {
         text2 = "Potion Up\nHeal +1";
-    }
 
 
     draw_text(
@@ -346,9 +412,9 @@ if (upgrade_open)
     );
 
 
-    // ========================
-    // 카드 3
-    // ========================
+    // =================================================
+    // CARD 3
+    // =================================================
 
     var card3_x =
         start_x + (card_w + gap) * 2;
@@ -386,29 +452,19 @@ if (upgrade_open)
     var text3 = "";
 
     if (card3 == 0)
-    {
         text3 = "Attack Up\nATK +1";
-    }
 
     if (card3 == 1)
-    {
         text3 = "Max HP Up\nHP +1";
-    }
 
     if (card3 == 2)
-    {
         text3 = "Defense Up\nDEF +1";
-    }
 
     if (card3 == 3)
-    {
         text3 = "Speed Up\nSpeed +0.5";
-    }
 
     if (card3 == 4)
-    {
         text3 = "Potion Up\nHeal +1";
-    }
 
 
     draw_text(
@@ -422,14 +478,189 @@ if (upgrade_open)
 }
 
 
-// ========================
+
+// =====================================================
+// INVENTORY
+// =====================================================
+
+if (inventory_open && !is_dead)
+{
+    var inv_w = 500;
+    var inv_h = 400;
+
+
+    var gui_w_inv =
+        display_get_gui_width();
+
+    var gui_h_inv =
+        display_get_gui_height();
+
+
+    var inv_x =
+        (gui_w_inv - inv_w) / 2;
+
+    var inv_y =
+        (gui_h_inv - inv_h) / 2;
+
+
+    // ========================
+    // 인벤토리 배경
+    // ========================
+
+    draw_set_alpha(0.9);
+    draw_set_color(c_black);
+
+    draw_rectangle(
+        inv_x,
+        inv_y,
+        inv_x + inv_w,
+        inv_y + inv_h,
+        false
+    );
+
+    draw_set_alpha(1);
+
+
+    // ========================
+    // 인벤토리 테두리
+    // ========================
+
+    draw_set_color(c_white);
+
+    draw_rectangle(
+        inv_x,
+        inv_y,
+        inv_x + inv_w,
+        inv_y + inv_h,
+        true
+    );
+
+
+    // ========================
+    // 제목
+    // ========================
+
+    draw_set_halign(fa_center);
+    draw_set_color(c_white);
+
+    draw_text(
+        gui_w_inv / 2,
+        inv_y + 25,
+        "INVENTORY"
+    );
+
+
+    draw_set_halign(fa_left);
+
+
+    // =================================================
+    // ITEMS
+    // =================================================
+
+    draw_set_color(c_yellow);
+
+    draw_text(
+        inv_x + 40,
+        inv_y + 80,
+        "ITEMS"
+    );
+
+
+    draw_set_color(c_white);
+
+    draw_text(
+        inv_x + 40,
+        inv_y + 115,
+        "Slime Gel: "
+        + string(slime_gel)
+    );
+
+
+    draw_text(
+        inv_x + 40,
+        inv_y + 145,
+        "Health Potion: "
+        + string(health_potion)
+    );
+
+
+    // =================================================
+    // STATS
+    // =================================================
+
+    draw_set_color(c_yellow);
+
+    draw_text(
+        inv_x + 280,
+        inv_y + 80,
+        "STATS"
+    );
+
+
+    draw_set_color(c_white);
+
+    draw_text(
+        inv_x + 280,
+        inv_y + 115,
+        "Attack: "
+        + string(attack_damage)
+    );
+
+
+    draw_text(
+        inv_x + 280,
+        inv_y + 145,
+        "Defense: "
+        + string(defense)
+    );
+
+
+    draw_text(
+        inv_x + 280,
+        inv_y + 175,
+        "Speed: "
+        + string(move_speed)
+    );
+
+
+    draw_text(
+        inv_x + 280,
+        inv_y + 205,
+        "Potion Heal: "
+        + string(potion_heal)
+    );
+
+
+    // ========================
+    // ESC 안내
+    // ========================
+
+    draw_set_halign(fa_center);
+    draw_set_color(c_white);
+
+    draw_text(
+        gui_w_inv / 2,
+        inv_y + inv_h - 40,
+        "[ESC] Close"
+    );
+
+
+    draw_set_halign(fa_left);
+}
+
+
+
+// =====================================================
 // 사망 화면
-// ========================
+// =====================================================
 
 if (is_dead)
 {
-    var gui_w2 = display_get_gui_width();
-    var gui_h2 = display_get_gui_height();
+    var gui_w2 =
+        display_get_gui_width();
+
+    var gui_h2 =
+        display_get_gui_height();
 
 
     draw_set_halign(fa_center);

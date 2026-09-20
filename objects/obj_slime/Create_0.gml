@@ -55,3 +55,25 @@ knockback_y = 0;
 
 knockback_timer = 0;
 knockback_speed = 4;
+
+// ========================
+// 연속 돌진
+// ========================
+
+dash_count = 0;
+max_dash_count = 1;
+
+redash_timer = 0;
+redash_time = 15;
+
+// ========================
+// 낮 / 밤 광폭화
+// ========================
+
+is_enraged = false;
+is_transforming = false;
+
+// 현재 낮/밤 상태 기억
+last_is_day = true;
+
+
