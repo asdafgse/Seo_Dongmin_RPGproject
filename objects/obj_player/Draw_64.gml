@@ -231,28 +231,147 @@ draw_text(
 
 // =====================================================
 // 상인 대화창
+// NPC 근처에 표시
 // =====================================================
 
 if (dialogue_open && !is_dead)
 {
-    draw_set_color(c_black);
-
-    draw_rectangle(
-        50,
-        350,
-        750,
-        470,
-        false
+    var shop_npc = instance_nearest(
+        x,
+        y,
+        obj_npc
     );
 
+    if (shop_npc != noone)
+    {
+        // ========================
+        // 카메라 정보
+        // ========================
 
-    draw_set_color(c_white);
+        var shop_cam = view_camera[0];
 
-    draw_text(
-        80,
-        380,
-        dialogue_text
-    );
+        var shop_cam_x =
+            camera_get_view_x(shop_cam);
+
+        var shop_cam_y =
+            camera_get_view_y(shop_cam);
+
+        var shop_cam_w =
+            camera_get_view_width(shop_cam);
+
+        var shop_cam_h =
+            camera_get_view_height(shop_cam);
+
+
+        // ========================
+        // GUI 크기
+        // ========================
+
+        var shop_gui_w =
+            display_get_gui_width();
+
+        var shop_gui_h =
+            display_get_gui_height();
+
+
+        // ========================
+        // 월드 좌표 → GUI 좌표
+        // ========================
+
+        var shop_scale_x =
+            shop_gui_w / shop_cam_w;
+
+        var shop_scale_y =
+            shop_gui_h / shop_cam_h;
+
+        var npc_gui_x =
+            (shop_npc.x - shop_cam_x)
+            * shop_scale_x;
+
+        var npc_gui_y =
+            (shop_npc.y - shop_cam_y)
+            * shop_scale_y;
+
+
+        // ========================
+        // 대화창 크기
+        // ========================
+
+        var shop_w = 300;
+        var shop_h = 120;
+
+        // NPC 오른쪽 위
+        var shop_x =
+            npc_gui_x + 40;
+
+        var shop_y =
+            npc_gui_y - shop_h - 20;
+
+
+        // ========================
+        // 화면 밖으로 나가지 않게
+        // ========================
+
+        shop_x = clamp(
+            shop_x,
+            10,
+            shop_gui_w - shop_w - 10
+        );
+
+        shop_y = clamp(
+            shop_y,
+            10,
+            shop_gui_h - shop_h - 10
+        );
+
+
+        // ========================
+        // 검은 배경
+        // ========================
+
+        draw_set_alpha(0.9);
+        draw_set_color(c_black);
+
+        draw_rectangle(
+            shop_x,
+            shop_y,
+            shop_x + shop_w,
+            shop_y + shop_h,
+            false
+        );
+
+        draw_set_alpha(1);
+
+
+        // ========================
+        // 흰색 테두리
+        // ========================
+
+        draw_set_color(c_white);
+
+        draw_rectangle(
+            shop_x,
+            shop_y,
+            shop_x + shop_w,
+            shop_y + shop_h,
+            true
+        );
+
+
+        // ========================
+        // 상점 텍스트
+        // ========================
+
+        draw_set_halign(fa_left);
+        draw_set_valign(fa_top);
+        draw_set_color(c_white);
+
+        draw_text(
+            shop_x + 12,
+            shop_y + 10,
+            dialogue_text
+        );
+    }
 }
 
 

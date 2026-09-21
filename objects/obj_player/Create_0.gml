@@ -125,3 +125,11 @@ save_y = y;
 
 // 세이브 포인트를 사용했는지
 has_save_point = false;
+
+// ========================
+// 포션 사용 모션
+// ========================
+
+is_drinking_potion = false;
+potion_timer = 0;
+potion_time = round(room_speed * 0.4);

@@ -6,6 +6,10 @@ if (hp <= 0)
 {
     hp = 0;
     is_dead = true;
+
+    sprite_index = spr_player_grave;
+    image_speed = 0;
+    image_index = 0;
 }
 
 
@@ -34,9 +38,11 @@ if (is_dead)
         is_attacking = false;
         is_rolling = false;
         is_invincible = false;
+        is_drinking_potion = false;
 
         attack_timer = 0;
         roll_timer = 0;
+        potion_timer = 0;
 
         knockback_timer = 0;
         knockback_x = 0;
@@ -65,8 +71,6 @@ if (is_dead)
 
 // =====================================================
 // 인벤토리
-// I = 열기
-// ESC = 닫기
 // =====================================================
 
 if (!inventory_open && keyboard_check_pressed(ord("I")))
@@ -164,6 +168,48 @@ if (upgrade_open)
 
 
 // =====================================================
+// 포션 사용 중
+// =====================================================
+
+if (is_drinking_potion)
+{
+    // 현재 방향에 맞는 포션 포즈
+    if (facing == "down")
+    {
+        sprite_index = spr_player_potion_down;
+    }
+
+    if (facing == "up")
+    {
+        sprite_index = spr_player_potion_up;
+    }
+
+    if (facing == "left")
+    {
+        sprite_index = spr_player_potion_left;
+    }
+
+    if (facing == "right")
+    {
+        sprite_index = spr_player_potion_right;
+    }
+
+    // 1프레임 고정
+    image_speed = 0;
+    image_index = 0;
+
+    potion_timer--;
+
+    if (potion_timer <= 0)
+    {
+        is_drinking_potion = false;
+    }
+
+    exit;
+}
+
+
+// =====================================================
 // 넉백 중
 // =====================================================
 
@@ -225,10 +271,7 @@ if (!is_rolling)
 
 if (!is_rolling && !is_attacking)
 {
-    // ---------------------------------
     // 움직이는 중 = RUN
-    // ---------------------------------
-
     if (move_x != 0 || move_y != 0)
     {
         if (facing == "down")
@@ -254,10 +297,7 @@ if (!is_rolling && !is_attacking)
         image_speed = 0.2;
     }
 
-    // ---------------------------------
     // 가만히 있음 = IDLE
-    // ---------------------------------
-
     else
     {
         if (facing == "down")
@@ -451,6 +491,34 @@ if (keyboard_check_pressed(ord("C")))
         {
             hp = max_hp;
         }
+
+        // 포션 포즈 시작
+        is_drinking_potion = true;
+        potion_timer = potion_time;
+
+        // 현재 방향 포션 Sprite
+        if (facing == "down")
+        {
+            sprite_index = spr_player_potion_down;
+        }
+
+        if (facing == "up")
+        {
+            sprite_index = spr_player_potion_up;
+        }
+
+        if (facing == "left")
+        {
+            sprite_index = spr_player_potion_left;
+        }
+
+        if (facing == "right")
+        {
+            sprite_index = spr_player_potion_right;
+        }
+
+        image_speed = 0;
+        image_index = 0;
 
         audio_play_sound(
             snd_potion_use,
@@ -681,15 +749,28 @@ if (save_point != noone)
 
     if (save_distance <= 50)
     {
-        if (keyboard_check_pressed(ord("E")))
+        if (
+            keyboard_check_pressed(ord("E"))
+            && !save_point.activated
+        )
         {
+            // 세이브 위치 저장
             save_x = save_point.x;
             save_y = save_point.y;
 
             has_save_point = true;
 
+            // HP 회복
             hp = max_hp;
 
+            // 세이브포인트 활성화
+            save_point.activated = true;
+
+            // Frame 1 = 불 켜짐
+            save_point.image_speed = 0;
+            save_point.image_index = 1;
+
+            // 효과음
             audio_play_sound(
                 snd_save_point,
                 1,
