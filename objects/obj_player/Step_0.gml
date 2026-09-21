@@ -21,15 +21,12 @@ if (is_dead)
         var gold_loss = floor(gold * 0.08);
         gold -= gold_loss;
 
-
         // 저장된 위치로 이동
         x = save_x;
         y = save_y;
 
-
         // HP 완전 회복
         hp = max_hp;
-
 
         // 상태 초기화
         is_dead = false;
@@ -45,12 +42,10 @@ if (is_dead)
         knockback_x = 0;
         knockback_y = 0;
 
-
         // UI 닫기
         dialogue_open = false;
         upgrade_open = false;
         inventory_open = false;
-
 
         show_debug_message(
             "RESPAWNED! Lost "
@@ -58,7 +53,6 @@ if (is_dead)
             + " Gold"
         );
     }
-
 
     if (keyboard_check_pressed(vk_escape))
     {
@@ -79,8 +73,6 @@ if (!inventory_open && keyboard_check_pressed(ord("I")))
 {
     inventory_open = true;
 
-
-    // UI 클릭 효과음
     audio_play_sound(
         snd_ui_click,
         1,
@@ -95,8 +87,6 @@ if (inventory_open)
     {
         inventory_open = false;
 
-
-        // UI 클릭 효과음
         audio_play_sound(
             snd_ui_click,
             1,
@@ -116,77 +106,56 @@ if (upgrade_open)
 {
     var selected_card = -1;
 
-
     if (keyboard_check_pressed(ord("1")))
     {
         selected_card = card1;
     }
-
 
     if (keyboard_check_pressed(ord("2")))
     {
         selected_card = card2;
     }
 
-
     if (keyboard_check_pressed(ord("3")))
     {
         selected_card = card3;
     }
 
-
-    // =================================================
-    // 카드 선택
-    // =================================================
-
     if (selected_card != -1)
     {
-        // UI 클릭 효과음
         audio_play_sound(
             snd_ui_click,
             1,
             false
         );
 
-
-        // Attack Up
         if (selected_card == 0)
         {
             attack_damage += 1;
         }
 
-
-        // Max HP Up
         if (selected_card == 1)
         {
             max_hp += 1;
             hp += 1;
         }
 
-
-        // Defense Up
         if (selected_card == 2)
         {
             defense += 1;
         }
 
-
-        // Speed Up
         if (selected_card == 3)
         {
             move_speed += 0.5;
         }
 
-
-        // Potion Heal Up
         if (selected_card == 4)
         {
             potion_heal += 1;
         }
 
-
         upgrade_open = false;
-
         upgrade_cost += 25;
     }
 
@@ -233,22 +202,86 @@ if (!is_rolling)
         facing = "right";
     }
 
-
     if (keyboard_check(vk_left))
     {
         facing = "left";
     }
-
 
     if (keyboard_check(vk_up))
     {
         facing = "up";
     }
 
-
     if (keyboard_check(vk_down))
     {
         facing = "down";
+    }
+}
+
+
+// =====================================================
+// IDLE / RUN 방향 스프라이트
+// =====================================================
+
+if (!is_rolling && !is_attacking)
+{
+    // ---------------------------------
+    // 움직이는 중 = RUN
+    // ---------------------------------
+
+    if (move_x != 0 || move_y != 0)
+    {
+        if (facing == "down")
+        {
+            sprite_index = spr_player_run_down;
+        }
+
+        if (facing == "up")
+        {
+            sprite_index = spr_player_run_up;
+        }
+
+        if (facing == "left")
+        {
+            sprite_index = spr_player_run_left;
+        }
+
+        if (facing == "right")
+        {
+            sprite_index = spr_player_run_right;
+        }
+
+        image_speed = 0.2;
+    }
+
+    // ---------------------------------
+    // 가만히 있음 = IDLE
+    // ---------------------------------
+
+    else
+    {
+        if (facing == "down")
+        {
+            sprite_index = spr_player_idle_down;
+        }
+
+        if (facing == "up")
+        {
+            sprite_index = spr_player_idle_up;
+        }
+
+        if (facing == "left")
+        {
+            sprite_index = spr_player_idle_left;
+        }
+
+        if (facing == "right")
+        {
+            sprite_index = spr_player_idle_right;
+        }
+
+        image_speed = 0;
+        image_index = 0;
     }
 }
 
@@ -262,9 +295,6 @@ if (keyboard_check_pressed(ord("X")) && !is_rolling)
     roll_x = move_x;
     roll_y = move_y;
 
-
-    // 방향키를 누르지 않았으면
-    // 현재 바라보는 방향으로 구르기
     if (roll_x == 0 && roll_y == 0)
     {
         if (facing == "right")
@@ -272,18 +302,15 @@ if (keyboard_check_pressed(ord("X")) && !is_rolling)
             roll_x = 1;
         }
 
-
         if (facing == "left")
         {
             roll_x = -1;
         }
 
-
         if (facing == "up")
         {
             roll_y = -1;
         }
-
 
         if (facing == "down")
         {
@@ -291,8 +318,6 @@ if (keyboard_check_pressed(ord("X")) && !is_rolling)
         }
     }
 
-
-    // 대각선 속도 정규화
     var roll_length =
         point_distance(
             0,
@@ -301,22 +326,17 @@ if (keyboard_check_pressed(ord("X")) && !is_rolling)
             roll_y
         );
 
-
     if (roll_length > 0)
     {
         roll_x /= roll_length;
         roll_y /= roll_length;
     }
 
-
-    // 구르기 시작
     is_rolling = true;
     is_invincible = true;
 
     roll_timer = 8;
 
-
-    // 구르기 효과음
     audio_play_sound(
         snd_player_roll,
         1,
@@ -334,9 +354,7 @@ if (is_rolling)
     x += roll_x * roll_speed;
     y += roll_y * roll_speed;
 
-
     roll_timer--;
-
 
     if (roll_timer <= 0)
     {
@@ -359,7 +377,6 @@ if (keyboard_check_pressed(ord("Z")) && !is_rolling)
 {
     var slash;
 
-
     slash = instance_create_layer(
         x,
         y,
@@ -367,50 +384,39 @@ if (keyboard_check_pressed(ord("Z")) && !is_rolling)
         obj_attack_slash
     );
 
-
-    // 공격 방향
     if (facing == "right")
     {
         slash.image_angle = 0;
     }
-
 
     if (facing == "left")
     {
         slash.image_angle = 180;
     }
 
-
     if (facing == "up")
     {
         slash.image_angle = 90;
     }
-
 
     if (facing == "down")
     {
         slash.image_angle = 270;
     }
 
-
-    // 검 휘두르는 효과음
     audio_play_sound(
         snd_sword_swing,
         1,
         false
     );
 
-
-    // 캐릭터 공격 음성
     audio_play_sound(
         snd_player_attack,
         1,
         false
     );
 
-
     is_attacking = true;
-
     attack_timer = 10;
 }
 
@@ -437,27 +443,20 @@ if (keyboard_check_pressed(ord("C")))
 {
     if (health_potion > 0 && hp < max_hp)
     {
-        // 포션 1개 사용
         health_potion -= 1;
 
-
-        // HP 회복
         hp += potion_heal;
-
 
         if (hp > max_hp)
         {
             hp = max_hp;
         }
 
-
-        // 포션 사용 효과음
         audio_play_sound(
             snd_potion_use,
             1,
             false
         );
-
 
         show_debug_message(
             "Health Potion used! HP: "
@@ -477,7 +476,6 @@ var npc = instance_nearest(
     obj_npc
 );
 
-
 if (npc != noone)
 {
     var npc_distance =
@@ -488,19 +486,13 @@ if (npc != noone)
             npc.y
         );
 
-
     if (npc_distance <= 50)
     {
-        // =================================================
-        // E - 상점 열기 / 닫기
-        // =================================================
-
         if (keyboard_check_pressed(ord("E")))
         {
             if (!dialogue_open)
             {
                 dialogue_open = true;
-
 
                 dialogue_text =
                     "Merchant\n"
@@ -510,8 +502,6 @@ if (npc != noone)
                     + string(upgrade_cost)
                     + " Gold)";
 
-
-                // 상점 열기 효과음
                 audio_play_sound(
                     snd_shop_open,
                     1,
@@ -522,8 +512,6 @@ if (npc != noone)
             {
                 dialogue_open = false;
 
-
-                // 닫을 때 일반 UI 효과음
                 audio_play_sound(
                     snd_ui_click,
                     1,
@@ -545,17 +533,13 @@ if (npc != noone)
             if (slime_gel > 0)
             {
                 slime_gel -= 1;
-
                 gold += 5;
 
-
-                // 전리품 판매 효과음
                 audio_play_sound(
                     snd_item_sell,
                     1,
                     false
                 );
-
 
                 dialogue_text =
                     "Sold Slime Gel!\n"
@@ -563,7 +547,6 @@ if (npc != noone)
                     + "F: Sell More\n"
                     + "B: Buy Potion\n"
                     + "U: Random Upgrade";
-
 
                 show_debug_message(
                     "Gold: "
@@ -590,24 +573,19 @@ if (npc != noone)
             if (gold >= 10)
             {
                 gold -= 10;
-
                 health_potion += 1;
 
-
-                // 일반 UI 클릭 효과음
                 audio_play_sound(
                     snd_ui_click,
                     1,
                     false
                 );
 
-
                 dialogue_text =
                     "Bought Health Potion!\n"
                     + "-10 Gold\n"
                     + "Potion: "
                     + string(health_potion);
-
 
                 show_debug_message(
                     "Health Potion: "
@@ -624,7 +602,7 @@ if (npc != noone)
 
 
         // =================================================
-        // U - 랜덤 강화 구매
+        // U - 랜덤 강화
         // =================================================
 
         if (
@@ -636,20 +614,14 @@ if (npc != noone)
             {
                 gold -= upgrade_cost;
 
-
-                // 일반 UI 클릭 효과음
                 audio_play_sound(
                     snd_ui_click,
                     1,
                     false
                 );
 
-
-                // 첫 번째 카드
                 card1 = irandom(4);
 
-
-                // 두 번째 카드
                 card2 = irandom(4);
 
                 while (card2 == card1)
@@ -657,8 +629,6 @@ if (npc != noone)
                     card2 = irandom(4);
                 }
 
-
-                // 세 번째 카드
                 card3 = irandom(4);
 
                 while (
@@ -669,9 +639,7 @@ if (npc != noone)
                     card3 = irandom(4);
                 }
 
-
                 upgrade_open = true;
-
                 dialogue_open = false;
             }
             else
@@ -701,7 +669,6 @@ var save_point = instance_nearest(
     obj_save_point
 );
 
-
 if (save_point != noone)
 {
     var save_distance =
@@ -712,29 +679,22 @@ if (save_point != noone)
             save_point.y
         );
 
-
     if (save_distance <= 50)
     {
         if (keyboard_check_pressed(ord("E")))
         {
-            // 위치 저장
             save_x = save_point.x;
             save_y = save_point.y;
 
             has_save_point = true;
 
-
-            // HP 완전 회복
             hp = max_hp;
 
-
-            // 세이브 포인트 효과음
             audio_play_sound(
                 snd_save_point,
                 1,
                 false
             );
-
 
             show_debug_message(
                 "CHECKPOINT SAVED!"
@@ -765,7 +725,6 @@ var cam_w =
 
 var cam_h =
     camera_get_view_height(cam);
-
 
 camera_set_view_pos(
     cam,
