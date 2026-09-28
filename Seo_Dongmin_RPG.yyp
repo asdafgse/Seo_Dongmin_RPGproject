@@ -62,6 +62,7 @@
     {"id":{"name":"snd_ui_click","path":"sounds/snd_ui_click/snd_ui_click.yy",},},
     {"id":{"name":"spr_attack_slash","path":"sprites/spr_attack_slash/spr_attack_slash.yy",},},
     {"id":{"name":"spr_grass","path":"sprites/spr_grass/spr_grass.yy",},},
+    {"id":{"name":"spr_house","path":"sprites/spr_house/spr_house.yy",},},
     {"id":{"name":"spr_npc","path":"sprites/spr_npc/spr_npc.yy",},},
     {"id":{"name":"spr_player_grave","path":"sprites/spr_player_grave/spr_player_grave.yy",},},
     {"id":{"name":"spr_player_idle_down","path":"sprites/spr_player_idle_down/spr_player_idle_down.yy",},},
