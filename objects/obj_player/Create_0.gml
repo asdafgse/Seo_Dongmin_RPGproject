@@ -82,7 +82,7 @@ gold = 0;
 
 upgrade_open = false;
 
-upgrade_cost = 50;
+upgrade_cost = 25;
 
 card1 = -1;
 card2 = -1;
