@@ -216,17 +216,75 @@ draw_rectangle(
 
 
 // =====================================================
-// GOLD
+// GOLD HUD
 // =====================================================
 
-draw_set_color(c_yellow);
-
-draw_text(
-    20,
-    185,
-    "Gold: " + string(gold)
+// 돈자루 아이콘
+draw_sprite_ext(
+    spr_gold_icon,
+    0,
+    32,
+    195,
+    1.5,
+    1.5,
+    0,
+    c_white,
+    1
 );
 
+
+// =====================================================
+// 골드 숫자
+// =====================================================
+
+draw_set_font(fnt_hud);
+
+draw_set_halign(fa_left);
+draw_set_valign(fa_middle);
+
+var gold_x = 58;
+var gold_y = 195;
+var gold_text = string(gold);
+
+
+// =====================================================
+// 검정 아웃라인
+// =====================================================
+
+draw_set_color(c_black);
+
+draw_text(gold_x - 2, gold_y, gold_text);
+draw_text(gold_x + 2, gold_y, gold_text);
+draw_text(gold_x, gold_y - 2, gold_text);
+draw_text(gold_x, gold_y + 2, gold_text);
+
+// 대각선도 넣어서 테두리를 더 자연스럽게
+draw_text(gold_x - 2, gold_y - 2, gold_text);
+draw_text(gold_x + 2, gold_y - 2, gold_text);
+draw_text(gold_x - 2, gold_y + 2, gold_text);
+draw_text(gold_x + 2, gold_y + 2, gold_text);
+
+
+// =====================================================
+// 실제 흰색 글씨
+// =====================================================
+
+draw_set_color(c_white);
+
+draw_text(
+    gold_x,
+    gold_y,
+    gold_text
+);
+
+
+// =====================================================
+// DRAW 설정 복구
+// =====================================================
+
+draw_set_halign(fa_left);
+draw_set_valign(fa_top);
+draw_set_color(c_white);
 
 
 // =====================================================

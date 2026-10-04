@@ -1,4 +1,19 @@
 // =====================================================
+// PAUSE MENU가 열려 있으면 플레이어 조작 정지
+// =====================================================
+
+var pause_menu = instance_find(obj_pause_menu, 0);
+
+if (pause_menu != noone)
+{
+    if (pause_menu.menu_open || keyboard_check_pressed(vk_escape))
+    {
+        exit;
+    }
+}
+
+
+// =====================================================
 // 사망 확인
 // =====================================================
 
@@ -58,11 +73,6 @@ if (is_dead)
             + string(gold_loss)
             + " Gold"
         );
-    }
-
-    if (keyboard_check_pressed(vk_escape))
-    {
-        game_end();
     }
 
     exit;
@@ -782,16 +792,6 @@ if (save_point != noone)
             );
         }
     }
-}
-
-
-// =====================================================
-// ESC키 - 게임 종료
-// =====================================================
-
-if (keyboard_check_pressed(vk_escape))
-{
-    game_end();
 }
 
 

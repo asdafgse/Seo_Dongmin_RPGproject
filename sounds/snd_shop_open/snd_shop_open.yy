@@ -13,7 +13,7 @@
   "name":"snd_shop_open",
   "parent":{
     "name":"Sounds",
-    "path":"folders/Sounds.yy",
+    "path":"folders/Shaders/Sounds.yy",
   },
   "preload":false,
   "resourceType":"GMSound",

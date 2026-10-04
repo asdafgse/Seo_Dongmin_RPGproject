@@ -13,7 +13,7 @@
   "name":"snd_item_pickup",
   "parent":{
     "name":"Sounds",
-    "path":"folders/Sounds.yy",
+    "path":"folders/Shaders/Sounds.yy",
   },
   "preload":false,
   "resourceType":"GMSound",
