@@ -1,4 +1,75 @@
 // =====================================================
+// MAIN HUD FRAME
+// =====================================================
+
+var gui_w = display_get_gui_width();
+var gui_h = display_get_gui_height();
+
+var hud_x = gui_w / 2;
+var hud_y = gui_h - 75;
+
+draw_sprite_ext(
+    spr_hud_frame,
+    0,
+    hud_x,
+    hud_y,
+    1.25,
+    1.25,
+    0,
+    c_white,
+    1
+);
+
+
+// =====================================================
+// TIME CLOCK
+// =====================================================
+
+var time_x = hud_x;
+var time_y = hud_y - 80;
+
+var time_frame = 0;
+
+var dn = instance_find(obj_daynight, 0);
+
+if (dn != noone)
+{
+    var time_progress = 1 - (dn.day_timer / dn.day_length);
+    time_progress = clamp(time_progress, 0, 1);
+
+    // 08:00
+    if (time_progress < 0.33)
+    {
+        time_frame = 0;
+    }
+
+    // 12:00
+    else if (time_progress < 0.66)
+    {
+        time_frame = 1;
+    }
+
+    // 16:00
+    else
+    {
+        time_frame = 2;
+    }
+}
+
+draw_sprite_ext(
+    spr_time_clock,
+    time_frame,
+    time_x,
+    time_y,
+    0.8,
+    0.8,
+    0,
+    c_white,
+    1
+);
+
+
+// =====================================================
 // MINI MAP - 플레이어 중심 추적형
 // =====================================================
 
@@ -8,20 +79,18 @@ var map_y = 20;
 var map_w = 200;
 var map_h = 120;
 
-
 // 미니맵에서 보여주는 실제 게임 범위
 var minimap_range_x = 500;
 var minimap_range_y = 300;
-
 
 // 미니맵 중앙
 var map_center_x = map_x + map_w / 2;
 var map_center_y = map_y + map_h / 2;
 
 
-// ========================
+// =====================================================
 // 미니맵 배경
-// ========================
+// =====================================================
 
 draw_set_color(c_black);
 
@@ -35,7 +104,385 @@ draw_rectangle(
 
 
 // =====================================================
-// 슬라임 표시
+// FACE FRAME
+// =====================================================
+
+var face_x = hud_x - 185;
+var face_y = hud_y + 2.5;
+
+draw_sprite_ext(
+    spr_face_frame,
+    0,
+    face_x,
+    face_y,
+    1.55,
+    1.55,
+    0,
+    c_white,
+    1
+);
+
+
+// =====================================================
+// HP BAR
+// =====================================================
+
+var hp_x = face_x + 230;
+var hp_y = hud_y - 20;
+
+var hp_scale_x = 1.6;
+var hp_scale_y = 1.3;
+
+var hp_ratio = hp / max_hp;
+hp_ratio = clamp(hp_ratio, 0, 1);
+
+
+// =====================================================
+// HP BAR FRAME
+// =====================================================
+
+draw_sprite_ext(
+    spr_hp_bar_frame,
+    0,
+    hp_x,
+    hp_y,
+    hp_scale_x,
+    hp_scale_y,
+    0,
+    c_white,
+    1
+);
+
+
+// =====================================================
+// RED HP FILL
+// =====================================================
+
+var hp_fill_w = 245;
+var hp_fill_h = 10;
+
+var hp_left = hp_x - (hp_fill_w / 2);
+var hp_top = hp_y - (hp_fill_h / 2);
+
+draw_set_color(c_red);
+
+draw_rectangle(
+    hp_left,
+    hp_top,
+    hp_left + (hp_fill_w * hp_ratio),
+    hp_top + hp_fill_h,
+    false
+);
+
+draw_set_color(c_white);
+
+
+// =====================================================
+// HP TEXT
+// =====================================================
+
+draw_set_font(fnt_hud);
+draw_set_halign(fa_center);
+draw_set_valign(fa_middle);
+
+var hp_text_x = hp_x - 160;
+var hp_text_y = hp_y;
+
+var hp_text = "HP";
+
+// 검정 테두리
+draw_set_color(c_black);
+
+draw_text(hp_text_x - 2, hp_text_y, hp_text);
+draw_text(hp_text_x + 2, hp_text_y, hp_text);
+draw_text(hp_text_x, hp_text_y - 2, hp_text);
+draw_text(hp_text_x, hp_text_y + 2, hp_text);
+
+draw_text(hp_text_x - 2, hp_text_y - 2, hp_text);
+draw_text(hp_text_x + 2, hp_text_y - 2, hp_text);
+draw_text(hp_text_x - 2, hp_text_y + 2, hp_text);
+draw_text(hp_text_x + 2, hp_text_y + 2, hp_text);
+
+// 빨간 HP 글씨
+draw_set_color(c_red);
+draw_text(hp_text_x, hp_text_y, hp_text);
+
+// 원상복구
+draw_set_halign(fa_left);
+draw_set_valign(fa_top);
+draw_set_color(c_white);
+
+
+// =====================================================
+// GOLD HUD
+// =====================================================
+
+var new_gold_x = hp_text_x + 10;
+var new_gold_y = hud_y + 15;
+
+// 골드 아이콘
+draw_sprite_ext(
+    spr_gold_icon,
+    0,
+    new_gold_x,
+    new_gold_y,
+    1.5,
+    1.5,
+    0,
+    c_white,
+    1
+);
+
+// 골드 숫자
+draw_set_font(fnt_hud);
+draw_set_halign(fa_left);
+draw_set_valign(fa_middle);
+
+var gold_text_x = new_gold_x + 25;
+var gold_text_y = new_gold_y;
+var gold_text = string(gold);
+
+// 검정 테두리
+draw_set_color(c_black);
+
+draw_text(gold_text_x - 2, gold_text_y, gold_text);
+draw_text(gold_text_x + 2, gold_text_y, gold_text);
+draw_text(gold_text_x, gold_text_y - 2, gold_text);
+draw_text(gold_text_x, gold_text_y + 2, gold_text);
+
+// 흰색 숫자
+draw_set_color(c_white);
+draw_text(gold_text_x, gold_text_y, gold_text);
+
+draw_set_halign(fa_left);
+draw_set_valign(fa_top);
+draw_set_color(c_white);
+
+
+// =====================================================
+// POTION HUD
+// =====================================================
+
+var new_potion_x = new_gold_x + 90;
+var new_potion_y = new_gold_y;
+
+// 포션 아이콘
+draw_sprite_ext(
+    spr_potion_icon,
+    0,
+    new_potion_x,
+    new_potion_y,
+    1.5,
+    1.5,
+    0,
+    c_white,
+    1
+);
+
+// 포션 개수
+draw_set_font(fnt_hud);
+draw_set_halign(fa_left);
+draw_set_valign(fa_middle);
+
+var potion_text_x = new_potion_x + 25;
+var potion_text_y = new_potion_y;
+var potion_text = string(health_potion);
+
+// 검정 테두리
+draw_set_color(c_black);
+
+draw_text(potion_text_x - 2, potion_text_y, potion_text);
+draw_text(potion_text_x + 2, potion_text_y, potion_text);
+draw_text(potion_text_x, potion_text_y - 2, potion_text);
+draw_text(potion_text_x, potion_text_y + 2, potion_text);
+
+// 흰색 숫자
+draw_set_color(c_white);
+draw_text(potion_text_x, potion_text_y, potion_text);
+
+draw_set_halign(fa_left);
+draw_set_valign(fa_top);
+draw_set_color(c_white);
+
+
+// =====================================================
+// ITEM SLOTS
+// =====================================================
+
+var slot_start_x = new_potion_x + 80;
+var slot_y = new_potion_y + 5;
+
+var slot_gap = 43;
+var slot_scale = 2.5;
+
+
+// SLOT 1
+draw_sprite_ext(
+    spr_slot,
+    0,
+    slot_start_x,
+    slot_y,
+    slot_scale,
+    slot_scale,
+    0,
+    c_white,
+    1
+);
+
+
+// SLOT 2
+draw_sprite_ext(
+    spr_slot,
+    0,
+    slot_start_x + slot_gap,
+    slot_y,
+    slot_scale,
+    slot_scale,
+    0,
+    c_white,
+    1
+);
+
+
+// SLOT 3
+draw_sprite_ext(
+    spr_slot,
+    0,
+    slot_start_x + (slot_gap * 2),
+    slot_y,
+    slot_scale,
+    slot_scale,
+    0,
+    c_white,
+    1
+);
+
+
+// SLOT 4
+draw_sprite_ext(
+    spr_slot,
+    0,
+    slot_start_x + (slot_gap * 3),
+    slot_y,
+    slot_scale,
+    slot_scale,
+    0,
+    c_white,
+    1
+);
+
+
+// =====================================================
+// SLIME GEL - SLOT 1
+// =====================================================
+
+var gel_x = slot_start_x;
+var gel_y = slot_y;
+
+
+// Slime Gel 아이콘
+draw_sprite_ext(
+    spr_slime_gel,
+    0,
+    gel_x,
+    gel_y,
+    1,
+    1,
+    0,
+    c_white,
+    1
+);
+
+
+// =====================================================
+// SLIME GEL COUNT
+// =====================================================
+
+draw_set_font(fnt_hud);
+draw_set_halign(fa_center);
+draw_set_valign(fa_middle);
+
+var gel_text_x = gel_x + 13;
+var gel_text_y = gel_y + 9;
+
+var gel_text = string(slime_gel);
+
+
+// 검정 테두리
+draw_set_color(c_black);
+
+draw_text_transformed(
+    gel_text_x - 1,
+    gel_text_y,
+    gel_text,
+    0.6,
+    0.6,
+    0
+);
+
+draw_text_transformed(
+    gel_text_x + 1,
+    gel_text_y,
+    gel_text,
+    0.6,
+    0.6,
+    0
+);
+
+draw_text_transformed(
+    gel_text_x,
+    gel_text_y - 1,
+    gel_text,
+    0.6,
+    0.6,
+    0
+);
+
+draw_text_transformed(
+    gel_text_x,
+    gel_text_y + 1,
+    gel_text,
+    0.6,
+    0.6,
+    0
+);
+
+
+// 흰색 숫자
+draw_set_color(c_white);
+
+draw_text_transformed(
+    gel_text_x,
+    gel_text_y,
+    gel_text,
+    0.6,
+    0.6,
+    0
+);
+
+
+// =====================================================
+// DRAW 설정 복구
+// =====================================================
+
+draw_set_halign(fa_left);
+draw_set_valign(fa_top);
+draw_set_color(c_white);
+
+
+// =====================================================
+// 원래 HUD 설정으로 복구
+// =====================================================
+
+draw_set_font(fnt_hud);
+
+draw_set_halign(fa_left);
+draw_set_valign(fa_top);
+draw_set_color(c_white);
+
+
+// =====================================================
+// 미니맵 - 슬라임 표시
 // =====================================================
 
 var slime_count = instance_number(obj_slime);
@@ -46,12 +493,9 @@ for (var i = 0; i < slime_count; i++)
 
     if (slime != noone)
     {
-        // 플레이어 기준 상대 위치
         var relative_x = slime.x - x;
         var relative_y = slime.y - y;
 
-
-        // 미니맵 좌표로 변환
         var monster_map_x =
             map_center_x
             + (relative_x / minimap_range_x)
@@ -62,8 +506,6 @@ for (var i = 0; i < slime_count; i++)
             + (relative_y / minimap_range_y)
             * map_h;
 
-
-        // 미니맵 안에 있을 때만 표시
         if (
             monster_map_x >= map_x
             && monster_map_x <= map_x + map_w
@@ -85,7 +527,7 @@ for (var i = 0; i < slime_count; i++)
 
 
 // =====================================================
-// 상인 NPC 표시
+// 미니맵 - 상인 NPC 표시
 // =====================================================
 
 var npc_count = instance_number(obj_npc);
@@ -96,12 +538,9 @@ for (var n = 0; n < npc_count; n++)
 
     if (npc_map != noone)
     {
-        // 플레이어 기준 상대 위치
         var npc_relative_x = npc_map.x - x;
         var npc_relative_y = npc_map.y - y;
 
-
-        // 미니맵 좌표로 변환
         var npc_map_x =
             map_center_x
             + (npc_relative_x / minimap_range_x)
@@ -112,8 +551,6 @@ for (var n = 0; n < npc_count; n++)
             + (npc_relative_y / minimap_range_y)
             * map_h;
 
-
-        // 미니맵 안에 있을 때만 표시
         if (
             npc_map_x >= map_x
             && npc_map_x <= map_x + map_w
@@ -135,8 +572,7 @@ for (var n = 0; n < npc_count; n++)
 
 
 // =====================================================
-// 플레이어 표시
-// 항상 미니맵 중앙
+// 미니맵 - 플레이어 표시
 // =====================================================
 
 draw_set_color(c_lime);
@@ -149,9 +585,9 @@ draw_circle(
 );
 
 
-// ========================
+// =====================================================
 // 미니맵 테두리
-// ========================
+// =====================================================
 
 draw_set_color(c_white);
 
@@ -161,120 +597,6 @@ draw_rectangle(
     map_x + map_w,
     map_y + map_h,
     true
-);
-
-
-
-// =====================================================
-// HP BAR
-// =====================================================
-
-var bar_x = 20;
-var bar_y = 155;
-
-var bar_w = 200;
-var bar_h = 20;
-
-var hp_percent = hp / max_hp;
-
-
-// HP 바 배경
-draw_set_color(c_black);
-
-draw_rectangle(
-    bar_x,
-    bar_y,
-    bar_x + bar_w,
-    bar_y + bar_h,
-    false
-);
-
-
-// 현재 HP
-draw_set_color(c_red);
-
-draw_rectangle(
-    bar_x,
-    bar_y,
-    bar_x + (bar_w * hp_percent),
-    bar_y + bar_h,
-    false
-);
-
-
-// HP 바 테두리
-draw_set_color(c_white);
-
-draw_rectangle(
-    bar_x,
-    bar_y,
-    bar_x + bar_w,
-    bar_y + bar_h,
-    true
-);
-
-
-
-// =====================================================
-// GOLD HUD
-// =====================================================
-
-// 돈자루 아이콘
-draw_sprite_ext(
-    spr_gold_icon,
-    0,
-    32,
-    195,
-    1.5,
-    1.5,
-    0,
-    c_white,
-    1
-);
-
-
-// =====================================================
-// 골드 숫자
-// =====================================================
-
-draw_set_font(fnt_hud);
-
-draw_set_halign(fa_left);
-draw_set_valign(fa_middle);
-
-var gold_x = 58;
-var gold_y = 195;
-var gold_text = string(gold);
-
-
-// =====================================================
-// 검정 아웃라인
-// =====================================================
-
-draw_set_color(c_black);
-
-draw_text(gold_x - 2, gold_y, gold_text);
-draw_text(gold_x + 2, gold_y, gold_text);
-draw_text(gold_x, gold_y - 2, gold_text);
-draw_text(gold_x, gold_y + 2, gold_text);
-
-// 대각선도 넣어서 테두리를 더 자연스럽게
-draw_text(gold_x - 2, gold_y - 2, gold_text);
-draw_text(gold_x + 2, gold_y - 2, gold_text);
-draw_text(gold_x - 2, gold_y + 2, gold_text);
-draw_text(gold_x + 2, gold_y + 2, gold_text);
-
-
-// =====================================================
-// 실제 흰색 글씨
-// =====================================================
-
-draw_set_color(c_white);
-
-draw_text(
-    gold_x,
-    gold_y,
-    gold_text
 );
 
 
@@ -288,219 +610,220 @@ draw_set_color(c_white);
 
 
 // =====================================================
-// 상인 대화창
-// NPC 근처에 표시
+// NEW DIALOGUE BOX
 // =====================================================
 
 if (dialogue_open && !is_dead)
 {
-    var shop_npc = instance_nearest(
-        x,
-        y,
-        obj_npc
+    var dialogue_gui_w = display_get_gui_width();
+    var dialogue_gui_h = display_get_gui_height();
+
+    var dialogue_x = dialogue_gui_w / 2;
+    var dialogue_y = dialogue_gui_h - 120;
+
+
+    // =================================================
+    // 대화창
+    // =================================================
+
+    draw_sprite_ext(
+        spr_dialogue_box,
+        0,
+        dialogue_x,
+        dialogue_y,
+        1.5,
+        2,
+        0,
+        c_white,
+        1
     );
 
-    if (shop_npc != noone)
-    {
-        // ========================
-        // 카메라 정보
-        // ========================
 
-        var shop_cam = view_camera[0];
+    // =================================================
+    // NPC 이름창
+    // =================================================
 
-        var shop_cam_x =
-            camera_get_view_x(shop_cam);
+    var name_x = dialogue_x - 270;
+    var name_y = dialogue_y - 130;
 
-        var shop_cam_y =
-            camera_get_view_y(shop_cam);
-
-        var shop_cam_w =
-            camera_get_view_width(shop_cam);
-
-        var shop_cam_h =
-            camera_get_view_height(shop_cam);
-
-
-        // ========================
-        // GUI 크기
-        // ========================
-
-        var shop_gui_w =
-            display_get_gui_width();
-
-        var shop_gui_h =
-            display_get_gui_height();
+    draw_sprite_ext(
+        spr_dialogue_name,
+        0,
+        name_x,
+        name_y,
+        1.5,
+        2,
+        0,
+        c_white,
+        1
+    );
 
 
-        // ========================
-        // 월드 좌표 → GUI 좌표
-        // ========================
+    // =================================================
+    // NPC 이름
+    // =================================================
 
-        var shop_scale_x =
-            shop_gui_w / shop_cam_w;
+    draw_set_font(fnt_hud);
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_middle);
 
-        var shop_scale_y =
-            shop_gui_h / shop_cam_h;
+    draw_set_color(c_black);
 
-        var npc_gui_x =
-            (shop_npc.x - shop_cam_x)
-            * shop_scale_x;
+    draw_text(name_x - 2, name_y, "Merchant");
+    draw_text(name_x + 2, name_y, "Merchant");
+    draw_text(name_x, name_y - 2, "Merchant");
+    draw_text(name_x, name_y + 2, "Merchant");
 
-        var npc_gui_y =
-            (shop_npc.y - shop_cam_y)
-            * shop_scale_y;
-
-
-        // ========================
-        // 대화창 크기
-        // ========================
-
-        var shop_w = 300;
-        var shop_h = 120;
-
-        // NPC 오른쪽 위
-        var shop_x =
-            npc_gui_x + 40;
-
-        var shop_y =
-            npc_gui_y - shop_h - 20;
+    draw_set_color(c_white);
+    draw_text(name_x, name_y, "Merchant");
 
 
-        // ========================
-        // 화면 밖으로 나가지 않게
-        // ========================
+    // =================================================
+    // 대화 내용
+    // =================================================
 
-        shop_x = clamp(
-            shop_x,
-            10,
-            shop_gui_w - shop_w - 10
-        );
+    var dialogue_text_x = dialogue_x - 380;
+    var dialogue_text_y = dialogue_y - 55;
 
-        shop_y = clamp(
-            shop_y,
-            10,
-            shop_gui_h - shop_h - 10
-        );
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
 
+    // 그림자
+    draw_set_color(c_black);
 
-        // ========================
-        // 검은 배경
-        // ========================
+    draw_text(
+        dialogue_text_x + 2,
+        dialogue_text_y + 2,
+        dialogue_text
+    );
 
-        draw_set_alpha(0.9);
-        draw_set_color(c_black);
+    // 흰색 글씨
+    draw_set_color(c_white);
 
-        draw_rectangle(
-            shop_x,
-            shop_y,
-            shop_x + shop_w,
-            shop_y + shop_h,
-            false
-        );
-
-        draw_set_alpha(1);
+    draw_text(
+        dialogue_text_x,
+        dialogue_text_y,
+        dialogue_text
+    );
 
 
-        // ========================
-        // 흰색 테두리
-        // ========================
+    // =================================================
+    // F / B / U
+    // =================================================
 
-        draw_set_color(c_white);
+    var key_x = dialogue_x + 380;
+    var key_y = dialogue_text_y;
 
-        draw_rectangle(
-            shop_x,
-            shop_y,
-            shop_x + shop_w,
-            shop_y + shop_h,
-            true
-        );
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_top);
 
 
-        // ========================
-        // 상점 텍스트
-        // ========================
+    // F
+    draw_set_color(c_black);
+    draw_text(key_x + 2, key_y + 2, "F");
 
-        draw_set_halign(fa_left);
-        draw_set_valign(fa_top);
-        draw_set_color(c_white);
+    draw_set_color(c_white);
+    draw_text(key_x, key_y, "F");
 
-        draw_text(
-            shop_x + 12,
-            shop_y + 10,
-            dialogue_text
-        );
-    }
+
+    // B
+    draw_set_color(c_black);
+    draw_text(key_x + 2, key_y + 26, "B");
+
+    draw_set_color(c_white);
+    draw_text(key_x, key_y + 24, "B");
+
+
+    // U
+    draw_set_color(c_black);
+    draw_text(key_x + 2, key_y + 50, "U");
+
+    draw_set_color(c_white);
+    draw_text(key_x, key_y + 48, "U");
+
+
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_color(c_white);
 }
 
 
-
 // =====================================================
-// 랜덤 강화 카드
+// RANDOM UPGRADE CARDS
 // =====================================================
 
 if (upgrade_open)
 {
-    var gui_w = display_get_gui_width();
-    var gui_h = display_get_gui_height();
+    var upgrade_gui_w = display_get_gui_width();
+    var upgrade_gui_h = display_get_gui_height();
 
-    var card_w = 180;
-    var card_h = 220;
-
+    var card_w = 200;
+    var card_h = 280;
     var gap = 30;
 
-    var start_x =
-        (gui_w - (card_w * 3 + gap * 2)) / 2;
+    var total_w = (card_w * 3) + (gap * 2);
 
-    var card_y =
-        (gui_h - card_h) / 2;
+    var card1_x =
+        (upgrade_gui_w / 2)
+        - (total_w / 2)
+        + (card_w / 2);
+
+    var card_y = upgrade_gui_h / 2;
+
+    var card2_x = card1_x + card_w + gap;
+    var card3_x = card2_x + card_w + gap;
 
 
-    // ========================
-    // 제목
-    // ========================
+    // =================================================
+    // CARD SPRITES
+    // =================================================
 
-    draw_set_halign(fa_center);
-    draw_set_color(c_white);
-
-    draw_text(
-        gui_w / 2,
-        card_y - 50,
-        "Choose One Upgrade"
+    draw_sprite_ext(
+        spr_upgrade_card,
+        0,
+        card1_x,
+        card_y,
+        1,
+        1,
+        0,
+        c_white,
+        1
     );
+
+    draw_sprite_ext(
+        spr_upgrade_card,
+        0,
+        card2_x,
+        card_y,
+        1,
+        1,
+        0,
+        c_white,
+        1
+    );
+
+    draw_sprite_ext(
+        spr_upgrade_card,
+        0,
+        card3_x,
+        card_y,
+        1,
+        1,
+        0,
+        c_white,
+        1
+    );
+
+
+    draw_set_font(fnt_hud);
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_middle);
+    draw_set_color(c_white);
 
 
     // =================================================
     // CARD 1
     // =================================================
-
-    draw_set_color(c_black);
-
-    draw_rectangle(
-        start_x,
-        card_y,
-        start_x + card_w,
-        card_y + card_h,
-        false
-    );
-
-
-    draw_set_color(c_white);
-
-    draw_rectangle(
-        start_x,
-        card_y,
-        start_x + card_w,
-        card_y + card_h,
-        true
-    );
-
-
-    draw_text(
-        start_x + card_w / 2,
-        card_y + 25,
-        "1"
-    );
-
 
     var text1 = "";
 
@@ -519,50 +842,22 @@ if (upgrade_open)
     if (card1 == 4)
         text1 = "Potion Up\nHeal +1";
 
+    draw_text(
+        card1_x,
+        card_y - 35,
+        text1
+    );
 
     draw_text(
-        start_x + card_w / 2,
-        card_y + 80,
-        text1
+        card1_x,
+        card_y + 95,
+        "1"
     );
 
 
     // =================================================
     // CARD 2
     // =================================================
-
-    var card2_x =
-        start_x + card_w + gap;
-
-
-    draw_set_color(c_black);
-
-    draw_rectangle(
-        card2_x,
-        card_y,
-        card2_x + card_w,
-        card_y + card_h,
-        false
-    );
-
-
-    draw_set_color(c_white);
-
-    draw_rectangle(
-        card2_x,
-        card_y,
-        card2_x + card_w,
-        card_y + card_h,
-        true
-    );
-
-
-    draw_text(
-        card2_x + card_w / 2,
-        card_y + 25,
-        "2"
-    );
-
 
     var text2 = "";
 
@@ -581,50 +876,22 @@ if (upgrade_open)
     if (card2 == 4)
         text2 = "Potion Up\nHeal +1";
 
+    draw_text(
+        card2_x,
+        card_y - 35,
+        text2
+    );
 
     draw_text(
-        card2_x + card_w / 2,
-        card_y + 80,
-        text2
+        card2_x,
+        card_y + 95,
+        "2"
     );
 
 
     // =================================================
     // CARD 3
     // =================================================
-
-    var card3_x =
-        start_x + (card_w + gap) * 2;
-
-
-    draw_set_color(c_black);
-
-    draw_rectangle(
-        card3_x,
-        card_y,
-        card3_x + card_w,
-        card_y + card_h,
-        false
-    );
-
-
-    draw_set_color(c_white);
-
-    draw_rectangle(
-        card3_x,
-        card_y,
-        card3_x + card_w,
-        card_y + card_h,
-        true
-    );
-
-
-    draw_text(
-        card3_x + card_w / 2,
-        card_y + 25,
-        "3"
-    );
-
 
     var text3 = "";
 
@@ -643,17 +910,23 @@ if (upgrade_open)
     if (card3 == 4)
         text3 = "Potion Up\nHeal +1";
 
+    draw_text(
+        card3_x,
+        card_y - 35,
+        text3
+    );
 
     draw_text(
-        card3_x + card_w / 2,
-        card_y + 80,
-        text3
+        card3_x,
+        card_y + 95,
+        "3"
     );
 
 
     draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_color(c_white);
 }
-
 
 
 // =====================================================
@@ -665,25 +938,14 @@ if (inventory_open && !is_dead)
     var inv_w = 500;
     var inv_h = 400;
 
+    var gui_w_inv = display_get_gui_width();
+    var gui_h_inv = display_get_gui_height();
 
-    var gui_w_inv =
-        display_get_gui_width();
-
-    var gui_h_inv =
-        display_get_gui_height();
-
-
-    var inv_x =
-        (gui_w_inv - inv_w) / 2;
-
-    var inv_y =
-        (gui_h_inv - inv_h) / 2;
+    var inv_x = (gui_w_inv - inv_w) / 2;
+    var inv_y = (gui_h_inv - inv_h) / 2;
 
 
-    // ========================
-    // 인벤토리 배경
-    // ========================
-
+    // 배경
     draw_set_alpha(0.9);
     draw_set_color(c_black);
 
@@ -698,10 +960,7 @@ if (inventory_open && !is_dead)
     draw_set_alpha(1);
 
 
-    // ========================
-    // 인벤토리 테두리
-    // ========================
-
+    // 테두리
     draw_set_color(c_white);
 
     draw_rectangle(
@@ -713,10 +972,7 @@ if (inventory_open && !is_dead)
     );
 
 
-    // ========================
     // 제목
-    // ========================
-
     draw_set_halign(fa_center);
     draw_set_color(c_white);
 
@@ -725,7 +981,6 @@ if (inventory_open && !is_dead)
         inv_y + 25,
         "INVENTORY"
     );
-
 
     draw_set_halign(fa_left);
 
@@ -742,7 +997,6 @@ if (inventory_open && !is_dead)
         "ITEMS"
     );
 
-
     draw_set_color(c_white);
 
     draw_text(
@@ -751,7 +1005,6 @@ if (inventory_open && !is_dead)
         "Slime Gel: "
         + string(slime_gel)
     );
-
 
     draw_text(
         inv_x + 40,
@@ -773,7 +1026,6 @@ if (inventory_open && !is_dead)
         "STATS"
     );
 
-
     draw_set_color(c_white);
 
     draw_text(
@@ -783,7 +1035,6 @@ if (inventory_open && !is_dead)
         + string(attack_damage)
     );
 
-
     draw_text(
         inv_x + 280,
         inv_y + 145,
@@ -791,14 +1042,12 @@ if (inventory_open && !is_dead)
         + string(defense)
     );
 
-
     draw_text(
         inv_x + 280,
         inv_y + 175,
         "Speed: "
         + string(move_speed)
     );
-
 
     draw_text(
         inv_x + 280,
@@ -808,10 +1057,7 @@ if (inventory_open && !is_dead)
     );
 
 
-    // ========================
-    // ESC 안내
-    // ========================
-
+    // ESC
     draw_set_halign(fa_center);
     draw_set_color(c_white);
 
@@ -821,28 +1067,21 @@ if (inventory_open && !is_dead)
         "[ESC] Close"
     );
 
-
     draw_set_halign(fa_left);
 }
 
 
-
 // =====================================================
-// 사망 화면
+// DEATH SCREEN
 // =====================================================
 
 if (is_dead)
 {
-    var gui_w2 =
-        display_get_gui_width();
-
-    var gui_h2 =
-        display_get_gui_height();
-
+    var gui_w2 = display_get_gui_width();
+    var gui_h2 = display_get_gui_height();
 
     draw_set_halign(fa_center);
     draw_set_valign(fa_middle);
-
 
     draw_set_color(c_red);
 
@@ -852,7 +1091,6 @@ if (is_dead)
         "YOU DIED"
     );
 
-
     draw_set_color(c_white);
 
     draw_text(
@@ -860,7 +1098,6 @@ if (is_dead)
         gui_h2 / 2 + 20,
         "Press R to Restart"
     );
-
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);

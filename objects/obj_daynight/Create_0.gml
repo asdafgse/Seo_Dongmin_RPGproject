@@ -12,7 +12,7 @@ is_day = true;
 // ========================
 
 // 테스트용:
-// 10초마다 낮/밤 변경
+// 낮 30초 / 밤 30초
 day_length = room_speed * 30;
 
 day_timer = day_length;

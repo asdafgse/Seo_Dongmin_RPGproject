@@ -11,8 +11,10 @@ day_timer--;
 
 if (day_timer <= 0)
 {
+    // 낮 ↔ 밤 변경
     is_day = !is_day;
 
+    // 타이머 초기화
     day_timer = day_length;
 
 

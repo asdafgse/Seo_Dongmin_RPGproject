@@ -566,6 +566,10 @@ if (npc != noone)
 
     if (npc_distance <= 50)
     {
+        // =================================================
+        // E - 대화창 열기 / 닫기
+        // =================================================
+
         if (keyboard_check_pressed(ord("E")))
         {
             if (!dialogue_open)
@@ -573,10 +577,9 @@ if (npc != noone)
                 dialogue_open = true;
 
                 dialogue_text =
-                    "Merchant\n"
-                    + "F: Sell Slime Gel (+5 Gold)\n"
-                    + "B: Buy Health Potion (10 Gold)\n"
-                    + "U: Random Upgrade ("
+                    "Sell Slime Gel (+5 Gold)\n"
+                    + "Buy Health Potion (10 Gold)\n"
+                    + "Random Upgrade ("
                     + string(upgrade_cost)
                     + " Gold)";
 
@@ -622,9 +625,9 @@ if (npc != noone)
                 dialogue_text =
                     "Sold Slime Gel!\n"
                     + "+5 Gold\n"
-                    + "F: Sell More\n"
-                    + "B: Buy Potion\n"
-                    + "U: Random Upgrade";
+                    + "Sell More\n"
+                    + "Buy Potion\n"
+                    + "Random Upgrade";
 
                 show_debug_message(
                     "Gold: "
@@ -699,7 +702,6 @@ if (npc != noone)
                 );
 
                 card1 = irandom(4);
-
                 card2 = irandom(4);
 
                 while (card2 == card1)
