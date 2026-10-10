@@ -31,7 +31,10 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":null,
+  "spriteId":{
+    "name":"spr_drop_gold",
+    "path":"sprites/spr_drop_gold/spr_drop_gold.yy",
+  },
   "spriteMaskId":null,
   "visible":true,
 }

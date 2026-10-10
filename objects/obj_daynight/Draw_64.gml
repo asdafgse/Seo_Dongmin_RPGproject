@@ -1,15 +1,49 @@
-// =====================================================
-// 화면 어둡게
-// Frame 2 = 16:00일 때만 어두움
-// =====================================================
+// =====================================
+// 낮 / 밤 점진적 어둠 효과
+// =====================================
 
-var progress = 1 - (day_timer / day_length);
-progress = clamp(progress, 0, 1);
+// 밤 최대 어둠: 50%
+var max_darkness = 0.5;
+var darkness = 0;
 
-// 16:00 구간
-if (progress >= 0.66)
+// 낮
+if (is_day)
 {
-    draw_set_alpha(0.35);
+    var progress = 1 - (day_timer / day_length);
+    progress = clamp(progress, 0, 1);
+
+    // 낮의 마지막 30%부터 어두워짐
+    if (progress >= 0.7)
+    {
+        darkness = max_darkness
+                 * ((progress - 0.7) / 0.3);
+    }
+}
+// 밤
+else
+{
+    var progress = 1 - (day_timer / night_length);
+    progress = clamp(progress, 0, 1);
+
+    // 밤의 마지막 30%부터 밝아짐
+    if (progress < 0.7)
+    {
+        darkness = max_darkness;
+    }
+    else
+    {
+        darkness = max_darkness
+                 * (1 - (progress - 0.7) / 0.3);
+    }
+}
+
+// =====================================
+// 화면에 어둠 적용
+// =====================================
+
+if (darkness > 0)
+{
+    draw_set_alpha(darkness);
     draw_set_color(c_black);
 
     draw_rectangle(
@@ -19,7 +53,7 @@ if (progress >= 0.66)
         display_get_gui_height(),
         false
     );
-
-    draw_set_alpha(1);
-    draw_set_color(c_white);
 }
+
+draw_set_alpha(1);
+draw_set_color(c_white);

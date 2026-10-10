@@ -31,7 +31,10 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":null,
+  "spriteId":{
+    "name":"spr_potion_icon",
+    "path":"sprites/spr_potion_icon/spr_potion_icon.yy",
+  },
   "spriteMaskId":null,
   "visible":true,
 }

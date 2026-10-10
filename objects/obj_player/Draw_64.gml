@@ -34,24 +34,19 @@ var dn = instance_find(obj_daynight, 0);
 
 if (dn != noone)
 {
-    var time_progress = 1 - (dn.day_timer / dn.day_length);
-    time_progress = clamp(time_progress, 0, 1);
-
-    // 08:00
-    if (time_progress < 0.33)
+    // obj_daynight의 낮/밤 상태를 시계와 공유
+    if (variable_instance_exists(dn, "is_day") && dn.is_day)
     {
-        time_frame = 0;
-    }
+        // 낮의 앞 절반 = 08:00, 뒤 절반 = 12:00
+        var day_progress = 0;
+        if (dn.day_length > 0)
+            day_progress = clamp(1 - (dn.day_timer / dn.day_length), 0, 1);
 
-    // 12:00
-    else if (time_progress < 0.66)
-    {
-        time_frame = 1;
+        time_frame = (day_progress < 0.5) ? 0 : 1;
     }
-
-    // 16:00
     else
     {
+        // 밤 전체 = 16:00 프레임
         time_frame = 2;
     }
 }
@@ -609,144 +604,7 @@ draw_set_valign(fa_top);
 draw_set_color(c_white);
 
 
-// =====================================================
-// NEW DIALOGUE BOX
-// =====================================================
-
-if (dialogue_open && !is_dead)
-{
-    var dialogue_gui_w = display_get_gui_width();
-    var dialogue_gui_h = display_get_gui_height();
-
-    var dialogue_x = dialogue_gui_w / 2;
-    var dialogue_y = dialogue_gui_h - 120;
-
-
-    // =================================================
-    // 대화창
-    // =================================================
-
-    draw_sprite_ext(
-        spr_dialogue_box,
-        0,
-        dialogue_x,
-        dialogue_y,
-        1.5,
-        2,
-        0,
-        c_white,
-        1
-    );
-
-
-    // =================================================
-    // NPC 이름창
-    // =================================================
-
-    var name_x = dialogue_x - 270;
-    var name_y = dialogue_y - 130;
-
-    draw_sprite_ext(
-        spr_dialogue_name,
-        0,
-        name_x,
-        name_y,
-        1.5,
-        2,
-        0,
-        c_white,
-        1
-    );
-
-
-    // =================================================
-    // NPC 이름
-    // =================================================
-
-    draw_set_font(fnt_hud);
-    draw_set_halign(fa_center);
-    draw_set_valign(fa_middle);
-
-    draw_set_color(c_black);
-
-    draw_text(name_x - 2, name_y, "Merchant");
-    draw_text(name_x + 2, name_y, "Merchant");
-    draw_text(name_x, name_y - 2, "Merchant");
-    draw_text(name_x, name_y + 2, "Merchant");
-
-    draw_set_color(c_white);
-    draw_text(name_x, name_y, "Merchant");
-
-
-    // =================================================
-    // 대화 내용
-    // =================================================
-
-    var dialogue_text_x = dialogue_x - 380;
-    var dialogue_text_y = dialogue_y - 55;
-
-    draw_set_halign(fa_left);
-    draw_set_valign(fa_top);
-
-    // 그림자
-    draw_set_color(c_black);
-
-    draw_text(
-        dialogue_text_x + 2,
-        dialogue_text_y + 2,
-        dialogue_text
-    );
-
-    // 흰색 글씨
-    draw_set_color(c_white);
-
-    draw_text(
-        dialogue_text_x,
-        dialogue_text_y,
-        dialogue_text
-    );
-
-
-    // =================================================
-    // F / B / U
-    // =================================================
-
-    var key_x = dialogue_x + 380;
-    var key_y = dialogue_text_y;
-
-    draw_set_halign(fa_center);
-    draw_set_valign(fa_top);
-
-
-    // F
-    draw_set_color(c_black);
-    draw_text(key_x + 2, key_y + 2, "F");
-
-    draw_set_color(c_white);
-    draw_text(key_x, key_y, "F");
-
-
-    // B
-    draw_set_color(c_black);
-    draw_text(key_x + 2, key_y + 26, "B");
-
-    draw_set_color(c_white);
-    draw_text(key_x, key_y + 24, "B");
-
-
-    // U
-    draw_set_color(c_black);
-    draw_text(key_x + 2, key_y + 50, "U");
-
-    draw_set_color(c_white);
-    draw_text(key_x, key_y + 48, "U");
-
-
-    draw_set_halign(fa_left);
-    draw_set_valign(fa_top);
-    draw_set_color(c_white);
-}
-
+// 상인 대화 말풍선은 obj_npc -> Draw GUI에서 표시합니다.
 
 // =====================================================
 // RANDOM UPGRADE CARDS

@@ -1,6 +1,8 @@
-// 처음에는 불 꺼짐
-image_speed = 0;
+// obj_save_point -> Create
+sprite_index = spr_priest_idle;
 image_index = 0;
-
-// 아직 작동하지 않음
+image_speed = 0.15;
 activated = false;
+is_healing = false;
+priest_dialogue_open = false;
+interact_range = 65;

@@ -14,70 +14,89 @@ if (pause_menu != noone)
 
 
 // =====================================================
-// 사망 확인
+// 피격 감지 및 사망 애니메이션
 // =====================================================
-
-if (hp <= 0)
+if (hp < last_hp && hp > 0)
 {
+    audio_play_sound(snd_player_hit, 1, false);
+    is_hit = true;
+    hit_timer = hit_duration;
+    is_attacking = false;
+    combo_step = 0;
+    combo_queued = false;
+    combo_hit_mask = 0;
+    sprite_index = spr_player_hit;
+    image_index = 0;
+    image_speed = 0.25;
+}
+last_hp = hp;
+
+if (hp <= 0 && !is_dead)
+{
+    audio_play_sound(snd_player_death, 1, false);
     hp = 0;
     is_dead = true;
-
-    sprite_index = spr_player_grave;
-    image_speed = 0;
+    is_hit = false;
+    is_attacking = false;
+    is_rolling = false;
+    is_invincible = false;
+    combo_step = 0;
+    combo_queued = false;
+    combo_hit_mask = 0;
+    sprite_index = spr_player_death;
     image_index = 0;
+    image_speed = 0.2;
 }
-
-
-// =====================================================
-// 죽었을 때
-// =====================================================
 
 if (is_dead)
 {
+    // 죽음 애니메이션을 한 번만 재생하고 마지막 프레임에서 멈춤
+    if (sprite_index != spr_player_death)
+    {
+        sprite_index = spr_player_death;
+        image_index = 0;
+        image_speed = 0.2;
+    }
+    if (image_index >= image_number - 1)
+    {
+        image_index = image_number - 1;
+        image_speed = 0;
+    }
+
     if (keyboard_check_pressed(ord("R")))
     {
-        // Gold 8% 손실
         var gold_loss = floor(gold * 0.08);
         gold -= gold_loss;
-
-        // 저장된 위치로 이동
         x = save_x;
         y = save_y;
-
-        // HP 완전 회복
         hp = max_hp;
-
-        // 상태 초기화
+        last_hp = hp;
         is_dead = false;
-
+        is_hit = false;
+        hit_timer = 0;
         is_attacking = false;
+        combo_step = 0;
+        combo_queued = false;
+        combo_hit_mask = 0;
         is_rolling = false;
         is_invincible = false;
         is_drinking_potion = false;
-
         attack_timer = 0;
         roll_timer = 0;
         potion_timer = 0;
-
         knockback_timer = 0;
         knockback_x = 0;
         knockback_y = 0;
-
-        // UI 닫기
         dialogue_open = false;
         upgrade_open = false;
         inventory_open = false;
-
-        show_debug_message(
-            "RESPAWNED! Lost "
-            + string(gold_loss)
-            + " Gold"
-        );
+        sprite_index = spr_player_idle;
+        image_index = 0;
+        image_speed = 0.15;
+        show_debug_message("RESPAWNED! Lost " + string(gold_loss) + " Gold");
     }
-
     exit;
 }
-
 
 // =====================================================
 // 인벤토리
@@ -178,61 +197,51 @@ if (upgrade_open)
 
 
 // =====================================================
-// 포션 사용 중
+// 포션 사용 중 - 4프레임 힐 애니메이션
 // =====================================================
-
 if (is_drinking_potion)
 {
-    // 현재 방향에 맞는 포션 포즈
-    if (facing == "down")
-    {
-        sprite_index = spr_player_potion_down;
-    }
-
-    if (facing == "up")
-    {
-        sprite_index = spr_player_potion_up;
-    }
-
-    if (facing == "left")
-    {
-        sprite_index = spr_player_potion_left;
-    }
-
-    if (facing == "right")
-    {
-        sprite_index = spr_player_potion_right;
-    }
-
-    // 1프레임 고정
-    image_speed = 0;
-    image_index = 0;
-
+    // 플레이어 스프라이트는 변경하지 않음.
+    // 힐 마법은 Draw 이벤트에서 별도로 표시.
     potion_timer--;
 
     if (potion_timer <= 0)
     {
         is_drinking_potion = false;
+        potion_timer = 0;
     }
-
     exit;
 }
 
 
 // =====================================================
-// 넉백 중
+// 피격 애니메이션 / 넉백
 // =====================================================
+if (is_hit)
+{
+    sprite_index = spr_player_hit;
+    image_speed = 0.25;
+    if (knockback_timer > 0)
+    {
+        x += knockback_x * knockback_speed;
+        y += knockback_y * knockback_speed;
+        knockback_timer--;
+    }
+    hit_timer--;
+    if (hit_timer <= 0)
+    {
+        is_hit = false;
+    }
+    exit;
+}
 
 if (knockback_timer > 0)
 {
     x += knockback_x * knockback_speed;
     y += knockback_y * knockback_speed;
-
     knockback_timer--;
-
     exit;
 }
-
 
 // =====================================================
 // 현재 방향키 입력
@@ -251,7 +260,7 @@ var move_y =
 // 바라보는 방향 기억
 // =====================================================
 
-if (!is_rolling)
+if (!is_rolling && !is_attacking)
 {
     if (keyboard_check(vk_right))
     {
@@ -276,71 +285,41 @@ if (!is_rolling)
 
 
 // =====================================================
-// IDLE / RUN 방향 스프라이트
+// 좌우 방향 전환 (원본 스프라이트는 오른쪽을 바라봄)
 // =====================================================
+if (facing == "left") image_xscale = -abs(image_xscale);
+else if (facing == "right") image_xscale = abs(image_xscale);
 
-if (!is_rolling && !is_attacking)
+// =====================================================
+// IDLE / RUN 애니메이션
+// =====================================================
+if (!is_rolling && !is_attacking && !is_hit && !is_dead)
 {
-    // 움직이는 중 = RUN
     if (move_x != 0 || move_y != 0)
     {
-        if (facing == "down")
+        if (sprite_index != spr_player_run)
         {
-            sprite_index = spr_player_run_down;
+            sprite_index = spr_player_run;
+            image_index = 0;
         }
-
-        if (facing == "up")
-        {
-            sprite_index = spr_player_run_up;
-        }
-
-        if (facing == "left")
-        {
-            sprite_index = spr_player_run_left;
-        }
-
-        if (facing == "right")
-        {
-            sprite_index = spr_player_run_right;
-        }
-
         image_speed = 0.2;
     }
-
-    // 가만히 있음 = IDLE
     else
     {
-        if (facing == "down")
+        if (sprite_index != spr_player_idle)
         {
-            sprite_index = spr_player_idle_down;
+            sprite_index = spr_player_idle;
+            image_index = 0;
         }
-
-        if (facing == "up")
-        {
-            sprite_index = spr_player_idle_up;
-        }
-
-        if (facing == "left")
-        {
-            sprite_index = spr_player_idle_left;
-        }
-
-        if (facing == "right")
-        {
-            sprite_index = spr_player_idle_right;
-        }
-
-        image_speed = 0;
-        image_index = 0;
+        image_speed = 0.15;
     }
 }
-
 
 // =====================================================
 // X키 - 8방향 구르기
 // =====================================================
 
-if (keyboard_check_pressed(ord("X")) && !is_rolling)
+if (keyboard_check_pressed(ord("X")) && !is_rolling && !is_drinking_potion)
 {
     roll_x = move_x;
     roll_y = move_y;
@@ -382,6 +361,12 @@ if (keyboard_check_pressed(ord("X")) && !is_rolling)
         roll_y /= roll_length;
     }
 
+    // 공격 도중 회피하면 현재 콤보를 취소
+    is_attacking = false;
+    combo_step = 0;
+    combo_queued = false;
+    combo_hit_mask = 0;
+
     is_rolling = true;
     is_invincible = true;
 
@@ -412,181 +397,220 @@ if (is_rolling)
         is_invincible = false;
     }
 }
-else
+else if (!is_attacking && !keyboard_check_pressed(ord("Z")))
 {
-    x += move_x * move_speed;
-    y += move_y * move_speed;
+    var next_dx = move_x * move_speed;
+    var next_dy = move_y * move_speed;
+
+    // X축 충돌 검사
+    if (
+        !place_meeting(x + next_dx, y, obj_slime)
+        && !place_meeting(x + next_dx, y, obj_npc)
+        && !place_meeting(x + next_dx, y, obj_save_point)
+    )
+    {
+        x += next_dx;
+    }
+
+    // Y축 충돌 검사
+    if (
+        !place_meeting(x, y + next_dy, obj_slime)
+        && !place_meeting(x, y + next_dy, obj_npc)
+        && !place_meeting(x, y + next_dy, obj_save_point)
+    )
+    {
+        y += next_dy;
+    }
 }
 
 
 // =====================================================
-// Z키 - 검 공격
+// Z키 - 3단 콤보 / 총 8회 타격
+// Attack 1: 4프레임 (1타)
+// Attack 2: 4, 7, 13프레임 (3타)
+// Attack 3: 6, 8, 10, 12프레임 (4타)
 // =====================================================
 
-if (keyboard_check_pressed(ord("Z")) && !is_rolling)
+if (keyboard_check_pressed(ord("Z")) && !is_rolling && !is_drinking_potion)
 {
-    var slash;
-
-    slash = instance_create_layer(
-        x,
-        y,
-        layer,
-        obj_attack_slash
-    );
-
-    if (facing == "right")
+    if (!is_attacking)
     {
-        slash.image_angle = 0;
+        is_attacking = true;
+        combo_step = 1;
+        combo_queued = false;
+        combo_hit_mask = 0;
+
+        sprite_index = spr_player_attack1;
+        image_index = 0;
+        image_speed = combo_speed;
+
+        audio_play_sound(snd_sword_swing, 1, false);
+        audio_play_sound(snd_player_attack, 1, false);
+    }
+    else if (combo_step < 3)
+    {
+        combo_queued = true;
+    }
+}
+
+if (is_attacking)
+{
+    // GameMaker image_index는 0부터 시작함
+    var combo_frames = [];
+
+    switch (combo_step)
+    {
+        case 1:
+            combo_frames = [3];
+            break;
+
+        case 2:
+            combo_frames = [3, 6, 12];
+            break;
+
+        case 3:
+            combo_frames = [5, 7, 9, 11];
+            break;
     }
 
-    if (facing == "left")
+    var current_frame = floor(image_index);
+
+    for (var hit_i = 0; hit_i < array_length(combo_frames); hit_i++)
     {
-        slash.image_angle = 180;
+        var hit_bit = 1 << hit_i;
+
+        if (current_frame >= combo_frames[hit_i]
+            && (combo_hit_mask & hit_bit) == 0)
+        {
+            combo_hit_mask |= hit_bit;
+
+            // 마지막 8번째 타격만 강한 넉백
+            var last_hit = (combo_step == 3 && hit_i == 3);
+            scr_combo_hit(id, last_hit ? 3 : 1);
+        }
     }
 
-    if (facing == "up")
+    // 애니메이션 종료 시 다음 콤보로 연결
+    if (image_index >= image_number - 1)
     {
-        slash.image_angle = 90;
+        if (combo_queued && combo_step < 3)
+        {
+            combo_step++;
+            combo_queued = false;
+            combo_hit_mask = 0;
+
+            if (combo_step == 2) sprite_index = spr_player_attack2;
+            if (combo_step == 3) sprite_index = spr_player_attack3;
+
+            image_index = 0;
+            image_speed = combo_speed;
+
+            audio_play_sound(snd_sword_swing, 1, false);
+            audio_play_sound(snd_player_attack, 1, false);
+        }
+        else
+        {
+            is_attacking = false;
+            combo_step = 0;
+            combo_queued = false;
+            combo_hit_mask = 0;
+            image_speed = 0;
+        }
     }
-
-    if (facing == "down")
-    {
-        slash.image_angle = 270;
-    }
-
-    audio_play_sound(
-        snd_sword_swing,
-        1,
-        false
-    );
-
-    audio_play_sound(
-        snd_player_attack,
-        1,
-        false
-    );
-
-    is_attacking = true;
-    attack_timer = 10;
 }
 
 
 // =====================================================
-// 공격 시간
+// C키 - 포션 사용 + 힐 애니메이션
 // =====================================================
-
-if (attack_timer > 0)
-{
-    attack_timer--;
-}
-else
-{
-    is_attacking = false;
-}
-
-
-// =====================================================
-// C키 - Health Potion 사용
-// =====================================================
-
 if (keyboard_check_pressed(ord("C")))
 {
-    if (health_potion > 0 && hp < max_hp)
+    if (health_potion > 0 && hp < max_hp
+        && !is_attacking && !is_rolling
+        && !is_drinking_potion && !is_dead && !is_hit)
     {
         health_potion -= 1;
+        hp = min(hp + potion_heal, max_hp);
 
-        hp += potion_heal;
-
-        if (hp > max_hp)
-        {
-            hp = max_hp;
-        }
-
-        // 포션 포즈 시작
         is_drinking_potion = true;
         potion_timer = potion_time;
+        // 힐 이펙트는 Draw 이벤트에서 재생함.
+        // 플레이어의 현재 스프라이트는 유지.
 
-        // 현재 방향 포션 Sprite
-        if (facing == "down")
-        {
-            sprite_index = spr_player_potion_down;
-        }
-
-        if (facing == "up")
-        {
-            sprite_index = spr_player_potion_up;
-        }
-
-        if (facing == "left")
-        {
-            sprite_index = spr_player_potion_left;
-        }
-
-        if (facing == "right")
-        {
-            sprite_index = spr_player_potion_right;
-        }
-
-        image_speed = 0;
-        image_index = 0;
-
-        audio_play_sound(
-            snd_potion_use,
-            1,
-            false
-        );
-
-        show_debug_message(
-            "Health Potion used! HP: "
-            + string(hp)
-        );
+        audio_play_sound(snd_potion_use, 1, false);
+        show_debug_message("Health Potion used! HP: " + string(hp));
     }
 }
 
-
 // =====================================================
-// E키 - 상인 NPC 상호작용
+// E키 - 마법사 상인 대화 / 거래
 // =====================================================
 
-var npc = instance_nearest(
-    x,
-    y,
-    obj_npc
-);
+var npc = instance_nearest(x, y, obj_npc);
 
 if (npc != noone)
 {
-    var npc_distance =
-        point_distance(
-            x,
-            y,
-            npc.x,
-            npc.y
-        );
+    var npc_distance = point_distance(x, y, npc.x, npc.y);
 
     if (npc_distance <= 50)
     {
-        // =================================================
-        // E - 대화창 열기 / 닫기
-        // =================================================
+        var nearest_priest = instance_nearest(
+            x, y, obj_save_point
+        );
 
-        if (keyboard_check_pressed(ord("E")))
+        var merchant_is_closer =
+            (nearest_priest == noone)
+            || (
+                npc_distance < point_distance(
+                    x, y,
+                    nearest_priest.x,
+                    nearest_priest.y
+                )
+            );
+
+        // =============================================
+        // 마법사 상호작용 애니메이션
+        // =============================================
+
+        if (
+            merchant_is_closer
+            && (
+                keyboard_check_pressed(ord("E"))
+                || (
+                    dialogue_open
+                    && (
+                        keyboard_check_pressed(ord("F"))
+                        || keyboard_check_pressed(ord("B"))
+                        || keyboard_check_pressed(ord("U"))
+                    )
+                )
+            )
+        )
+        {
+            npc.is_interacting = true;
+            npc.sprite_index = spr_wizard_interact;
+            npc.image_index = 0;
+            npc.image_speed = 0.20;
+        }
+
+        // =============================================
+        // E - 대화 열기 / 닫기
+        // =============================================
+
+        if (
+            keyboard_check_pressed(ord("E"))
+            && merchant_is_closer
+        )
         {
             if (!dialogue_open)
             {
                 dialogue_open = true;
 
                 dialogue_text =
-                    "Sell Slime Gel (+5 Gold)\n"
-                    + "Buy Health Potion (10 Gold)\n"
-                    + "Random Upgrade ("
-                    + string(upgrade_cost)
-                    + " Gold)";
+                    "Ah, a traveler! Need some magic?";
 
                 audio_play_sound(
-                    snd_shop_open,
-                    1,
-                    false
+                    snd_shop_open, 1, false
                 );
             }
             else
@@ -594,20 +618,18 @@ if (npc != noone)
                 dialogue_open = false;
 
                 audio_play_sound(
-                    snd_ui_click,
-                    1,
-                    false
+                    snd_ui_click, 1, false
                 );
             }
         }
 
-
-        // =================================================
-        // F - Slime Gel 판매
-        // =================================================
+        // =============================================
+        // F - Slime Gel 판매 (+5 Gold)
+        // =============================================
 
         if (
             dialogue_open
+            && merchant_is_closer
             && keyboard_check_pressed(ord("F"))
         )
         {
@@ -616,38 +638,31 @@ if (npc != noone)
                 slime_gel -= 1;
                 gold += 5;
 
+                dialogue_text =
+                    "Excellent! I can use this for spells!";
+
                 audio_play_sound(
-                    snd_item_sell,
-                    1,
-                    false
+                    snd_item_sell, 1, false
                 );
 
-                dialogue_text =
-                    "Sold Slime Gel!\n"
-                    + "+5 Gold\n"
-                    + "Sell More\n"
-                    + "Buy Potion\n"
-                    + "Random Upgrade";
-
                 show_debug_message(
-                    "Gold: "
-                    + string(gold)
+                    "Gold: " + string(gold)
                 );
             }
             else
             {
                 dialogue_text =
-                    "You don't have any Slime Gel.";
+                    "Bring me some Slime Gel, traveler!";
             }
         }
 
-
-        // =================================================
-        // B - Health Potion 구매
-        // =================================================
+        // =============================================
+        // B - Health Potion 구매 (10 Gold)
+        // =============================================
 
         if (
             dialogue_open
+            && merchant_is_closer
             && keyboard_check_pressed(ord("B"))
         )
         {
@@ -656,17 +671,12 @@ if (npc != noone)
                 gold -= 10;
                 health_potion += 1;
 
-                audio_play_sound(
-                    snd_ui_click,
-                    1,
-                    false
-                );
-
                 dialogue_text =
-                    "Bought Health Potion!\n"
-                    + "-10 Gold\n"
-                    + "Potion: "
-                    + string(health_potion);
+                    "A healing potion! Use it wisely.";
+
+                audio_play_sound(
+                    snd_ui_click, 1, false
+                );
 
                 show_debug_message(
                     "Health Potion: "
@@ -676,18 +686,17 @@ if (npc != noone)
             else
             {
                 dialogue_text =
-                    "Not enough Gold!\n"
-                    + "Health Potion costs 10 Gold.";
+                    "Even magic isn't free, my friend!";
             }
         }
 
-
-        // =================================================
-        // U - 랜덤 강화
-        // =================================================
+        // =============================================
+        // U - 랜덤 강화 카드
+        // =============================================
 
         if (
             dialogue_open
+            && merchant_is_closer
             && keyboard_check_pressed(ord("U"))
         )
         {
@@ -696,11 +705,10 @@ if (npc != noone)
                 gold -= upgrade_cost;
 
                 audio_play_sound(
-                    snd_ui_click,
-                    1,
-                    false
+                    snd_ui_click, 1, false
                 );
 
+                // 서로 다른 카드 3개 생성
                 card1 = irandom(4);
                 card2 = irandom(4);
 
@@ -719,80 +727,65 @@ if (npc != noone)
                     card3 = irandom(4);
                 }
 
+                dialogue_text =
+                    "Choose your magical blessing!";
+
                 upgrade_open = true;
                 dialogue_open = false;
             }
             else
             {
                 dialogue_text =
-                    "Not enough Gold!\n"
-                    + "Random Upgrade costs "
-                    + string(upgrade_cost)
-                    + " Gold.";
+                    "You need more gold for my magic!";
             }
         }
     }
     else
     {
+        // 상인에게서 멀어지면 대화 종료
         dialogue_open = false;
     }
 }
 
-
 // =====================================================
-// 세이브 포인트
+// 프리스트: E 대화 / F 기도(힐 + 세이브) / E 대화 종료
 // =====================================================
-
-var save_point = instance_nearest(
-    x,
-    y,
-    obj_save_point
-);
-
-if (save_point != noone)
+var priest = instance_nearest(x, y, obj_save_point);
+if (priest != noone)
 {
-    var save_distance =
-        point_distance(
-            x,
-            y,
-            save_point.x,
-            save_point.y
-        );
-
-    if (save_distance <= 50)
+    var priest_distance = point_distance(x, y, priest.x, priest.y);
+    if (priest_distance <= priest.interact_range)
     {
-        if (
-            keyboard_check_pressed(ord("E"))
-            && !save_point.activated
-        )
+        // 상인 대화와 동시에 열리지 않도록 제한
+        if (!dialogue_open && !upgrade_open && !is_attacking && !is_rolling && (instance_nearest(x, y, obj_npc) == noone || point_distance(x, y, priest.x, priest.y) <= point_distance(x, y, instance_nearest(x, y, obj_npc).x, instance_nearest(x, y, obj_npc).y)))
         {
-            // 세이브 위치 저장
-            save_x = save_point.x;
-            save_y = save_point.y;
+            if (keyboard_check_pressed(ord("E")))
+            {
+                priest.priest_dialogue_open = !priest.priest_dialogue_open;
+                audio_play_sound(snd_ui_click, 1, false);
+            }
+            if (priest.priest_dialogue_open && keyboard_check_pressed(ord("F")))
+            {
+                priest.priest_dialogue_open = false;
+                priest.is_healing = true;
+                priest.sprite_index = spr_priest_heal;
+                priest.image_index = 0;
+                priest.image_speed = 0.20;
 
-            has_save_point = true;
-
-            // HP 회복
-            hp = max_hp;
-
-            // 세이브포인트 활성화
-            save_point.activated = true;
-
-            // Frame 1 = 불 켜짐
-            save_point.image_speed = 0;
-            save_point.image_index = 1;
-
-            // 효과음
-            audio_play_sound(
-                snd_save_point,
-                1,
-                false
-            );
-
-            show_debug_message(
-                "CHECKPOINT SAVED!"
-            );
+                hp = max_hp;
+                last_hp = hp;
+                save_x = priest.x;
+                save_y = priest.y + 36; // 프리스트 발밑에서 조금 아래에 부활
+                has_save_point = true;
+                priest.activated = true;
+                audio_play_sound(snd_save_point, 1, false);
+                show_debug_message("HP RESTORED! CHECKPOINT SAVED!");
+            }
         }
+    }
+    else
+    {
+        priest.priest_dialogue_open = false;
     }
 }
 
