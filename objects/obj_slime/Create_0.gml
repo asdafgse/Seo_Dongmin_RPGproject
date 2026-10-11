@@ -59,3 +59,29 @@ image_index = 0;
 image_speed = 0.15;
 image_xscale = 1;
 image_blend = c_white;
+
+// 체력바 표시 타이머
+hp_bar_timer = 0;
+
+// ==========================================
+// 랜덤 배회 시스템
+// ==========================================
+
+// 최초 스폰 위치
+spawn_x = x;
+spawn_y = y;
+
+// 배회 범위
+wander_radius = 100;
+
+// 배회 속도
+wander_speed = 0.5;
+
+// 이동 방향
+wander_direction = irandom(359);
+
+// 방향 변경까지 남은 시간
+wander_timer = irandom_range(30, 90);
+
+// 잠시 멈추는 시간
+wander_wait = 0;

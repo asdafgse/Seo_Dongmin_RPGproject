@@ -58,6 +58,8 @@ last_hp = hp;
 
 is_dead = false;
 
+game_over_sound_played = false;
+
 // =====================================================
 // 대화
 // =====================================================
@@ -79,7 +81,7 @@ gold = 0;
 // =====================================================
 
 upgrade_open = false;
-upgrade_cost = 50;
+upgrade_cost = 15;
 
 card1 = -1;
 card2 = -1;
@@ -110,3 +112,8 @@ potion_timer = 0;
 potion_time = 16;
 
 heal_animation_speed = 0.25;
+
+bat_wing = 0;
+
+// 오크 가죽 보유 수량
+orc_hide = 0;

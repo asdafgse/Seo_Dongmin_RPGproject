@@ -13,7 +13,7 @@
   "name":"snd_ui_click",
   "parent":{
     "name":"Sounds",
-    "path":"folders/Shaders/Sounds.yy",
+    "path":"folders/Sounds.yy",
   },
   "preload":false,
   "resourceType":"GMSound",

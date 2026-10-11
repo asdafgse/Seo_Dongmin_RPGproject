@@ -13,7 +13,7 @@
   "name":"snd_player_death",
   "parent":{
     "name":"Sounds",
-    "path":"folders/Shaders/Sounds.yy",
+    "path":"folders/Sounds.yy",
   },
   "preload":false,
   "resourceType":"GMSound",

@@ -457,6 +457,72 @@ draw_text_transformed(
 
 
 // =====================================================
+// BAT WING - SLOT 2
+// =====================================================
+
+var wing_x = slot_start_x + slot_gap;
+var wing_y = slot_y;
+
+draw_sprite_ext(
+    spr_bat_wing, 0,
+    wing_x, wing_y,
+    1, 1, 0,
+    c_white, 1
+);
+
+// 박쥐 날개 개수 (검은색 테두리 + 흰색 글자)
+draw_set_font(fnt_hud);
+draw_set_halign(fa_center);
+draw_set_valign(fa_middle);
+
+var wing_text = string(bat_wing);
+var wing_text_x = wing_x + 13;
+var wing_text_y = wing_y + 9;
+
+draw_set_color(c_black);
+draw_text_transformed(wing_text_x - 1, wing_text_y, wing_text, 0.6, 0.6, 0);
+draw_text_transformed(wing_text_x + 1, wing_text_y, wing_text, 0.6, 0.6, 0);
+draw_text_transformed(wing_text_x, wing_text_y - 1, wing_text, 0.6, 0.6, 0);
+draw_text_transformed(wing_text_x, wing_text_y + 1, wing_text, 0.6, 0.6, 0);
+
+draw_set_color(c_white);
+draw_text_transformed(wing_text_x, wing_text_y, wing_text, 0.6, 0.6, 0);
+
+
+// =====================================================
+// ORC HIDE - SLOT 3
+// =====================================================
+
+var hide_x = slot_start_x + (slot_gap * 2);
+var hide_y = slot_y;
+
+draw_sprite_ext(
+    spr_orc_hide, 0,
+    hide_x, hide_y,
+    1, 1, 0,
+    c_white, 1
+);
+
+// 오크 가죽 수량 (검은색 테두리 + 흰색 글자)
+draw_set_font(fnt_hud);
+draw_set_halign(fa_center);
+draw_set_valign(fa_middle);
+
+var hide_text = string(orc_hide);
+var hide_text_x = hide_x + 13;
+var hide_text_y = hide_y + 9;
+
+draw_set_color(c_black);
+draw_text_transformed(hide_text_x - 1, hide_text_y, hide_text, 0.6, 0.6, 0);
+draw_text_transformed(hide_text_x + 1, hide_text_y, hide_text, 0.6, 0.6, 0);
+draw_text_transformed(hide_text_x, hide_text_y - 1, hide_text, 0.6, 0.6, 0);
+draw_text_transformed(hide_text_x, hide_text_y + 1, hide_text, 0.6, 0.6, 0);
+
+draw_set_color(c_white);
+draw_text_transformed(hide_text_x, hide_text_y, hide_text, 0.6, 0.6, 0);
+
+
+// =====================================================
 // DRAW 설정 복구
 // =====================================================
 
@@ -477,45 +543,54 @@ draw_set_color(c_white);
 
 
 // =====================================================
-// 미니맵 - 슬라임 표시
+// MINI MAP - Slime / Bat / Orc (red)
 // =====================================================
-
-var slime_count = instance_number(obj_slime);
-
-for (var i = 0; i < slime_count; i++)
+var minimap_monsters = [obj_slime, obj_bat, obj_orc];
+for (var monster_type = 0; monster_type < array_length(minimap_monsters); monster_type++)
 {
-    var slime = instance_find(obj_slime, i);
-
-    if (slime != noone)
+    var monster_object = minimap_monsters[monster_type];
+    var monster_count = instance_number(monster_object);
+    for (var monster_i = 0; monster_i < monster_count; monster_i++)
     {
-        var relative_x = slime.x - x;
-        var relative_y = slime.y - y;
+        var monster = instance_find(monster_object, monster_i);
+        if (monster == noone) continue;
+        if (variable_instance_exists(monster, "state") && monster.state == "dying") continue;
 
-        var monster_map_x =
-            map_center_x
-            + (relative_x / minimap_range_x)
-            * map_w;
-
-        var monster_map_y =
-            map_center_y
-            + (relative_y / minimap_range_y)
-            * map_h;
-
-        if (
-            monster_map_x >= map_x
-            && monster_map_x <= map_x + map_w
-            && monster_map_y >= map_y
-            && monster_map_y <= map_y + map_h
-        )
+        var monster_map_x = map_center_x + ((monster.x - x) / minimap_range_x) * map_w;
+        var monster_map_y = map_center_y + ((monster.y - y) / minimap_range_y) * map_h;
+        if (monster_map_x >= map_x && monster_map_x <= map_x + map_w
+            && monster_map_y >= map_y && monster_map_y <= map_y + map_h)
         {
             draw_set_color(c_red);
+            draw_circle(monster_map_x, monster_map_y, 3, false);
+        }
+    }
+}
 
-            draw_circle(
-                monster_map_x,
-                monster_map_y,
-                3,
-                false
-            );
+
+// =====================================================
+// MINI MAP - Priest / Save Point (cyan)
+// If your save point has another object name, add it here.
+// =====================================================
+var priest_names = ["obj_priest", "obj_save_point", "obj_savepoint", "obj_save"];
+for (var priest_type = 0; priest_type < array_length(priest_names); priest_type++)
+{
+    var priest_object = asset_get_index(priest_names[priest_type]);
+    if (priest_object == -1) continue;
+    if (asset_get_type(priest_object) != asset_object) continue;
+
+    var priest_count = instance_number(priest_object);
+    for (var priest_i = 0; priest_i < priest_count; priest_i++)
+    {
+        var priest = instance_find(priest_object, priest_i);
+        if (priest == noone) continue;
+        var priest_map_x = map_center_x + ((priest.x - x) / minimap_range_x) * map_w;
+        var priest_map_y = map_center_y + ((priest.y - y) / minimap_range_y) * map_h;
+        if (priest_map_x >= map_x && priest_map_x <= map_x + map_w
+            && priest_map_y >= map_y && priest_map_y <= map_y + map_h)
+        {
+            draw_set_color(c_aqua);
+            draw_circle(priest_map_x, priest_map_y, 4, false);
         }
     }
 }
@@ -871,6 +946,23 @@ if (inventory_open && !is_dead)
         + string(health_potion)
     );
 
+    // Bat Wing - 박쥐 날개 수량
+    draw_text(
+        inv_x + 40,
+        inv_y + 175,
+        "Bat Wing: "
+        + string(bat_wing)
+    );
+
+
+    // Orc Hide - 오크 가죽 수량
+    draw_text(
+        inv_x + 40,
+        inv_y + 205,
+        "Orc Hide: "
+        + string(orc_hide)
+    );
+
 
     // =================================================
     // STATS
@@ -930,7 +1022,7 @@ if (inventory_open && !is_dead)
 
 
 // =====================================================
-// DEATH SCREEN
+// DEATH SCREEN - SPRITE
 // =====================================================
 
 if (is_dead)
@@ -938,25 +1030,35 @@ if (is_dead)
     var gui_w2 = display_get_gui_width();
     var gui_h2 = display_get_gui_height();
 
-    draw_set_halign(fa_center);
-    draw_set_valign(fa_middle);
+    // 화면 어둡게
+    draw_set_alpha(0.65);
+    draw_set_color(c_black);
 
-    draw_set_color(c_red);
-
-    draw_text(
-        gui_w2 / 2,
-        gui_h2 / 2 - 20,
-        "YOU DIED"
+    draw_rectangle(
+        0, 0,
+        gui_w2, gui_h2,
+        false
     );
 
+    draw_set_alpha(1);
     draw_set_color(c_white);
 
-    draw_text(
-        gui_w2 / 2,
-        gui_h2 / 2 + 20,
-        "Press R to Restart"
-    );
+    // 게임 오버 스프라이트
+    var death_w = 500;
+    var death_h = 260;
 
-    draw_set_halign(fa_left);
-    draw_set_valign(fa_top);
+    draw_sprite_stretched(
+        spr_game_over,
+        0,
+        (gui_w2 - death_w) / 2,
+        (gui_h2 - death_h) / 2,
+        death_w,
+        death_h
+    );
 }
+
+// Draw 설정 복구
+draw_set_alpha(1);
+draw_set_color(c_white);
+draw_set_halign(fa_left);
+draw_set_valign(fa_top);

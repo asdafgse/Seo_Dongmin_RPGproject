@@ -32,8 +32,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_save_point",
-    "path":"sprites/spr_save_point/spr_save_point.yy",
+    "name":"spr_priest_idle",
+    "path":"sprites/spr_priest_idle/spr_priest_idle.yy",
   },
   "spriteMaskId":null,
   "visible":true,

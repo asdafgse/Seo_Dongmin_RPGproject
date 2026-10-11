@@ -1,3 +1,31 @@
+if (instance_exists(obj_victory)) exit;
+
+// =====================================
+// GAME OVER SOUND
+// =====================================
+
+if (is_dead && !game_over_sound_played)
+{
+    audio_play_sound(snd_game_over, 10, false);
+    game_over_sound_played = true;
+
+    show_debug_message("GAME OVER SOUND PLAYED");
+}
+
+// Merchant sell-menu state (initialized once)
+if (!variable_instance_exists(id, "sell_menu_open")) sell_menu_open = false;
+if (!variable_instance_exists(id, "bat_wing")) bat_wing = 0;
+if (!variable_instance_exists(id, "orc_hide")) orc_hide = 0;
+
+// ESC returns from Sell menu without opening the pause menu.
+if (sell_menu_open && keyboard_check_pressed(vk_escape))
+{
+    sell_menu_open = false;
+    dialogue_text = "Anything else, traveler?";
+    audio_play_sound(snd_ui_click, 1, false);
+    exit;
+}
+
 // =====================================================
 // PAUSE MENU가 열려 있으면 플레이어 조작 정지
 // =====================================================
@@ -97,39 +125,6 @@ if (is_dead)
     }
     exit;
 }
-
-// =====================================================
-// 인벤토리
-// =====================================================
-
-if (!inventory_open && keyboard_check_pressed(ord("I")))
-{
-    inventory_open = true;
-
-    audio_play_sound(
-        snd_ui_click,
-        1,
-        false
-    );
-}
-
-
-if (inventory_open)
-{
-    if (keyboard_check_pressed(vk_escape))
-    {
-        inventory_open = false;
-
-        audio_play_sound(
-            snd_ui_click,
-            1,
-            false
-        );
-    }
-
-    exit;
-}
-
 
 // =====================================================
 // 랜덤 강화 카드 선택 중
@@ -370,7 +365,7 @@ if (keyboard_check_pressed(ord("X")) && !is_rolling && !is_drinking_potion)
     is_rolling = true;
     is_invincible = true;
 
-    roll_timer = 8;
+    roll_timer = 12; // 기존 8프레임에서 12프레임: 이동 거리 약 50% 증가
 
     audio_play_sound(
         snd_player_roll,
@@ -379,15 +374,35 @@ if (keyboard_check_pressed(ord("X")) && !is_rolling && !is_drinking_potion)
     );
 }
 
-
 // =====================================================
-// 구르기 / 일반 이동
+// 구르기 / 일반 이동 + 오브젝트 충돌
 // =====================================================
 
 if (is_rolling)
 {
-    x += roll_x * roll_speed;
-    y += roll_y * roll_speed;
+    // 구르기 중 몬스터는 통과 가능
+    // NPC, 세이브 포인트, 모닥불, 표지판은 통과 불가
+
+    var roll_dx = roll_x * roll_speed;
+    var roll_dy = roll_y * roll_speed;
+
+    // X축 구르기
+    if (!place_meeting(x + roll_dx, y, obj_npc)
+        && !place_meeting(x + roll_dx, y, obj_save_point)
+        && !place_meeting(x + roll_dx, y, obj_campfire)
+        && !place_meeting(x + roll_dx, y, obj_controls_sign))
+    {
+        x += roll_dx;
+    }
+
+    // Y축 구르기
+    if (!place_meeting(x, y + roll_dy, obj_npc)
+        && !place_meeting(x, y + roll_dy, obj_save_point)
+        && !place_meeting(x, y + roll_dy, obj_campfire)
+        && !place_meeting(x, y + roll_dy, obj_controls_sign))
+    {
+        y += roll_dy;
+    }
 
     roll_timer--;
 
@@ -402,22 +417,32 @@ else if (!is_attacking && !keyboard_check_pressed(ord("Z")))
     var next_dx = move_x * move_speed;
     var next_dy = move_y * move_speed;
 
-    // X축 충돌 검사
-    if (
-        !place_meeting(x + next_dx, y, obj_slime)
+    // =====================================
+    // X축 일반 이동
+    // =====================================
+
+    if (!place_meeting(x + next_dx, y, obj_slime)
+        && !place_meeting(x + next_dx, y, obj_bat)
+        && !place_meeting(x + next_dx, y, obj_orc)
         && !place_meeting(x + next_dx, y, obj_npc)
         && !place_meeting(x + next_dx, y, obj_save_point)
-    )
+        && !place_meeting(x + next_dx, y, obj_campfire)
+        && !place_meeting(x + next_dx, y, obj_controls_sign))
     {
         x += next_dx;
     }
 
-    // Y축 충돌 검사
-    if (
-        !place_meeting(x, y + next_dy, obj_slime)
+    // =====================================
+    // Y축 일반 이동
+    // =====================================
+
+    if (!place_meeting(x, y + next_dy, obj_slime)
+        && !place_meeting(x, y + next_dy, obj_bat)
+        && !place_meeting(x, y + next_dy, obj_orc)
         && !place_meeting(x, y + next_dy, obj_npc)
         && !place_meeting(x, y + next_dy, obj_save_point)
-    )
+        && !place_meeting(x, y + next_dy, obj_campfire)
+        && !place_meeting(x, y + next_dy, obj_controls_sign))
     {
         y += next_dy;
     }
@@ -543,207 +568,134 @@ if (keyboard_check_pressed(ord("C")))
 }
 
 // =====================================================
-// E키 - 마법사 상인 대화 / 거래
+// E - Wizard merchant / F - Sell selection
 // =====================================================
-
 var npc = instance_nearest(x, y, obj_npc);
-
 if (npc != noone)
 {
     var npc_distance = point_distance(x, y, npc.x, npc.y);
-
     if (npc_distance <= 50)
     {
-        var nearest_priest = instance_nearest(
-            x, y, obj_save_point
-        );
+        var nearest_priest = instance_nearest(x, y, obj_save_point);
+        var merchant_is_closer = (nearest_priest == noone)
+            || (npc_distance < point_distance(x, y, nearest_priest.x, nearest_priest.y));
 
-        var merchant_is_closer =
-            (nearest_priest == noone)
-            || (
-                npc_distance < point_distance(
-                    x, y,
-                    nearest_priest.x,
-                    nearest_priest.y
-                )
-            );
-
-        // =============================================
-        // 마법사 상호작용 애니메이션
-        // =============================================
-
-        if (
-            merchant_is_closer
-            && (
-                keyboard_check_pressed(ord("E"))
-                || (
-                    dialogue_open
-                    && (
-                        keyboard_check_pressed(ord("F"))
-                        || keyboard_check_pressed(ord("B"))
-                        || keyboard_check_pressed(ord("U"))
-                    )
-                )
-            )
-        )
+        if (merchant_is_closer)
         {
-            npc.is_interacting = true;
-            npc.sprite_index = spr_wizard_interact;
-            npc.image_index = 0;
-            npc.image_speed = 0.20;
-        }
+            var pressed_e = keyboard_check_pressed(ord("E"));
+            var pressed_f = keyboard_check_pressed(ord("F"));
+            var pressed_b = keyboard_check_pressed(ord("B"));
+            var pressed_u = keyboard_check_pressed(ord("U"));
+            var pressed_1 = keyboard_check_pressed(ord("1"));
+            var pressed_2 = keyboard_check_pressed(ord("2"));
+            var pressed_3 = keyboard_check_pressed(ord("3"));
 
-        // =============================================
-        // E - 대화 열기 / 닫기
-        // =============================================
-
-        if (
-            keyboard_check_pressed(ord("E"))
-            && merchant_is_closer
-        )
-        {
-            if (!dialogue_open)
+            if (pressed_e || (dialogue_open && (pressed_f || pressed_b || pressed_u
+                || (sell_menu_open && (pressed_1 || pressed_2 || pressed_3)))))
             {
-                dialogue_open = true;
-
-                dialogue_text =
-                    "Ah, a traveler! Need some magic?";
-
-                audio_play_sound(
-                    snd_shop_open, 1, false
-                );
+                npc.is_interacting = true;
+                npc.sprite_index = spr_wizard_interact;
+                npc.image_index = 0;
+                npc.image_speed = 0.20;
             }
-            else
+
+            if (pressed_e)
             {
-                dialogue_open = false;
-
-                audio_play_sound(
-                    snd_ui_click, 1, false
-                );
-            }
-        }
-
-        // =============================================
-        // F - Slime Gel 판매 (+5 Gold)
-        // =============================================
-
-        if (
-            dialogue_open
-            && merchant_is_closer
-            && keyboard_check_pressed(ord("F"))
-        )
-        {
-            if (slime_gel > 0)
-            {
-                slime_gel -= 1;
-                gold += 5;
-
-                dialogue_text =
-                    "Excellent! I can use this for spells!";
-
-                audio_play_sound(
-                    snd_item_sell, 1, false
-                );
-
-                show_debug_message(
-                    "Gold: " + string(gold)
-                );
-            }
-            else
-            {
-                dialogue_text =
-                    "Bring me some Slime Gel, traveler!";
-            }
-        }
-
-        // =============================================
-        // B - Health Potion 구매 (10 Gold)
-        // =============================================
-
-        if (
-            dialogue_open
-            && merchant_is_closer
-            && keyboard_check_pressed(ord("B"))
-        )
-        {
-            if (gold >= 10)
-            {
-                gold -= 10;
-                health_potion += 1;
-
-                dialogue_text =
-                    "A healing potion! Use it wisely.";
-
-                audio_play_sound(
-                    snd_ui_click, 1, false
-                );
-
-                show_debug_message(
-                    "Health Potion: "
-                    + string(health_potion)
-                );
-            }
-            else
-            {
-                dialogue_text =
-                    "Even magic isn't free, my friend!";
-            }
-        }
-
-        // =============================================
-        // U - 랜덤 강화 카드
-        // =============================================
-
-        if (
-            dialogue_open
-            && merchant_is_closer
-            && keyboard_check_pressed(ord("U"))
-        )
-        {
-            if (gold >= upgrade_cost)
-            {
-                gold -= upgrade_cost;
-
-                audio_play_sound(
-                    snd_ui_click, 1, false
-                );
-
-                // 서로 다른 카드 3개 생성
-                card1 = irandom(4);
-                card2 = irandom(4);
-
-                while (card2 == card1)
+                if (!dialogue_open)
                 {
-                    card2 = irandom(4);
+                    dialogue_open = true;
+                    sell_menu_open = false;
+                    dialogue_text = "Ah, a traveler! Looking to trade?";
+                    audio_play_sound(snd_shop_open, 1, false);
                 }
-
-                card3 = irandom(4);
-
-                while (
-                    card3 == card1
-                    || card3 == card2
-                )
+                else
                 {
-                    card3 = irandom(4);
+                    dialogue_open = false;
+                    sell_menu_open = false;
+                    audio_play_sound(snd_ui_click, 1, false);
                 }
-
-                dialogue_text =
-                    "Choose your magical blessing!";
-
-                upgrade_open = true;
-                dialogue_open = false;
             }
-            else
+
+            if (dialogue_open)
             {
-                dialogue_text =
-                    "You need more gold for my magic!";
+                if (sell_menu_open)
+                {
+                    if (pressed_1)
+                    {
+                        if (slime_gel > 0)
+                        {
+                            slime_gel -= 1;
+                            gold += 5;
+                            dialogue_text = "Slime Gel! Just what my potions need!";
+                            audio_play_sound(snd_item_sell, 1, false);
+                        }
+                        else dialogue_text = "No Slime Gel? Come back when you find some!";
+                    }
+                    else if (pressed_2)
+                    {
+                        if (bat_wing > 0)
+                        {
+                            bat_wing -= 1;
+                            gold += 10;
+                            dialogue_text = "A bat wing! Perfect for my experiments!";
+                            audio_play_sound(snd_item_sell, 1, false);
+                        }
+                        else dialogue_text = "You don't have any bat wings, traveler!";
+                    }
+                    else if (pressed_3)
+                    {
+                        if (orc_hide > 0)
+                        {
+                            orc_hide -= 1;
+                            gold += 15;
+                            dialogue_text = "Orc Hide! This will be useful for my magic!";
+                            audio_play_sound(snd_item_sell, 1, false);
+                        }
+                        else dialogue_text = "You don't have any Orc Hide, traveler!";
+                    }
+                }
+                else if (pressed_f)
+                {
+                    sell_menu_open = true;
+                    dialogue_text = "What treasures have you brought me?";
+                    audio_play_sound(snd_ui_click, 1, false);
+                }
+                else if (pressed_b)
+                {
+                    if (gold >= 10)
+                    {
+                        gold -= 10;
+                        health_potion += 1;
+                        dialogue_text = "A healing potion! Use it wisely.";
+                        audio_play_sound(snd_ui_click, 1, false);
+                    }
+                    else dialogue_text = "Come back when you've got more gold!";
+                }
+                else if (pressed_u)
+                {
+                    if (gold >= upgrade_cost)
+                    {
+                        gold -= upgrade_cost;
+                        audio_play_sound(snd_ui_click, 1, false);
+                        card1 = irandom(4);
+                        card2 = irandom(4);
+                        while (card2 == card1) card2 = irandom(4);
+                        card3 = irandom(4);
+                        while (card3 == card1 || card3 == card2) card3 = irandom(4);
+                        dialogue_text = "Choose your magical blessing!";
+                        upgrade_open = true;
+                        dialogue_open = false;
+                        sell_menu_open = false;
+                    }
+                    else dialogue_text = "You need more gold for my magic!";
+                }
             }
         }
     }
     else
     {
-        // 상인에게서 멀어지면 대화 종료
         dialogue_open = false;
+        sell_menu_open = false;
     }
 }
 

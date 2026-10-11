@@ -3,6 +3,12 @@
 // 밤: Attack 1 (38px) 또는 Attack 2 (48px) 랜덤 50:50
 // 변신: 낮->밤 정방향, 밤->낮 역방향
 
+// 체력바 표시 시간 감소
+if (hp_bar_timer > 0)
+{
+    hp_bar_timer--;
+}
+
 // 일시정지 / 인벤토리
 var pause_menu = instance_find(obj_pause_menu, 0);
 if (pause_menu != noone)
@@ -130,15 +136,57 @@ if (hit_flash_timer > 0)
     image_blend = c_red;
 }
 
+// 플레이어와 충분히 멀면 스폰 지점 주변에서 자유 배회
 var player = instance_nearest(x, y, obj_player);
-if (player == noone)
+var dist = (player == noone) ? 999999 : point_distance(x, y, player.x, player.y);
+
+if (dist > detect_range * 1.5 || (player != noone && player.is_dead))
 {
     state = "idle";
-    sprite_index = is_enraged ? spr_slime_night_idle : spr_slime_idle;
+
+    // 방향 변경 또는 휴식
+    if (wander_wait > 0)
+    {
+        wander_wait--;
+    }
+    else
+    {
+        wander_timer--;
+        if (wander_timer <= 0)
+        {
+            if (irandom(99) < 35)
+            {
+                wander_wait = irandom_range(20, 60);
+            }
+            wander_direction = irandom(359);
+            wander_timer = irandom_range(30, 90);
+        }
+
+        // 스폰 위치에서 멀어지면 중심으로 복귀
+        var home_dist = point_distance(x, y, spawn_x, spawn_y);
+        var move_dir = wander_direction;
+        if (home_dist >= wander_radius)
+            move_dir = point_direction(x, y, spawn_x, spawn_y);
+
+        var wx = lengthdir_x(wander_speed, move_dir);
+        var wy = lengthdir_y(wander_speed, move_dir);
+        x += wx;
+        y += wy;
+        if (abs(wx) > 0.01) image_xscale = (wx < 0) ? -1 : 1;
+    }
+
+    var roaming = (wander_wait <= 0);
+    var wander_spr = is_enraged
+        ? (roaming ? spr_slime_night_walk : spr_slime_night_idle)
+        : (roaming ? spr_slime_walk : spr_slime_idle);
+    if (sprite_index != wander_spr)
+    {
+        sprite_index = wander_spr;
+        image_index = 0;
+    }
     image_speed = 0.15;
     exit;
 }
-var dist = point_distance(x, y, player.x, player.y);
 
 // 공통 쿨타임
 if (state == "melee_cooldown" || state == "night_cooldown")
