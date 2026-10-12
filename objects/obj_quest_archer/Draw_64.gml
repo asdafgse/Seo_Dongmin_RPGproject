@@ -1,0 +1,16 @@
+if (!dialogue_open) exit;
+var cam = view_camera[0];
+var bx = (x - camera_get_view_x(cam)) * display_get_gui_width() / camera_get_view_width(cam);
+var by = (y - camera_get_view_y(cam) - 65) * display_get_gui_height() / camera_get_view_height(cam);
+var bw = 330;
+var bh = 100;
+draw_set_alpha(1);
+draw_set_color(c_white);
+draw_sprite_stretched(spr_npc_bubble, 0, bx - bw/2, by - bh/2, bw, bh);
+draw_set_color(c_black);
+draw_set_halign(fa_center);
+draw_set_valign(fa_middle);
+draw_text_transformed(bx, by, dialogue_text, 0.75, 0.75, 0);
+draw_set_halign(fa_left);
+draw_set_valign(fa_top);
+draw_set_color(c_white);

@@ -117,3 +117,40 @@ bat_wing = 0;
 
 // 오크 가죽 보유 수량
 orc_hide = 0;
+// 봉인석 보유 여부
+has_seal_stone = false;
+
+// =====================================================
+// CAPTAIN'S FINAL TRIAL - QUEST SYSTEM
+// =====================================================
+
+// 퀘스트 상태
+// 0 = 시작 전
+// 1 = 진행 중
+// 2 = 완료 (봉인석 지급)
+captain_quest = 0;
+
+// 몬스터 처치 횟수
+quest_slime_kills = 0;
+quest_bat_kills = 0;
+quest_orc_kills = 0;
+
+// 몬스터 처치 목표
+quest_slime_target = 10;
+quest_bat_target = 7;
+quest_orc_target = 5;
+
+// 재료 수집 목표
+quest_slime_gel_target = 10;
+quest_bat_wing_target = 5;
+quest_orc_hide_target = 3;
+
+// Knight Quest
+knight_quest = 0; // 0: 시작 전, 1: 진행 중, 2: 완료
+
+archer_quest = 0;
+archer_bat_kills = 0;
+
+// Add at the END of obj_player Create, do not replace it.
+spearman_quest = 0;
+spearman_orc_kills = 0;

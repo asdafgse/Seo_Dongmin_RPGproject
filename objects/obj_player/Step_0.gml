@@ -1,3 +1,9 @@
+// Repair reward for a Captain quest already completed.
+if (variable_instance_exists(id, "captain_quest") && captain_quest == 2)
+{
+    has_seal_stone = true;
+}
+
 if (instance_exists(obj_victory)) exit;
 
 // =====================================
@@ -388,6 +394,10 @@ if (is_rolling)
 
     // X축 구르기
     if (!place_meeting(x + roll_dx, y, obj_npc)
+        && !place_meeting(x + roll_dx, y, obj_quest_knight)
+        && !place_meeting(x + roll_dx, y, obj_quest_archer)
+        && !place_meeting(x + roll_dx, y, obj_quest_spearman)
+        && !place_meeting(x + roll_dx, y, obj_quest_captain)
         && !place_meeting(x + roll_dx, y, obj_save_point)
         && !place_meeting(x + roll_dx, y, obj_campfire)
         && !place_meeting(x + roll_dx, y, obj_controls_sign))
@@ -397,6 +407,10 @@ if (is_rolling)
 
     // Y축 구르기
     if (!place_meeting(x, y + roll_dy, obj_npc)
+        && !place_meeting(x, y + roll_dy, obj_quest_knight)
+        && !place_meeting(x, y + roll_dy, obj_quest_archer)
+        && !place_meeting(x, y + roll_dy, obj_quest_spearman)
+        && !place_meeting(x, y + roll_dy, obj_quest_captain)
         && !place_meeting(x, y + roll_dy, obj_save_point)
         && !place_meeting(x, y + roll_dy, obj_campfire)
         && !place_meeting(x, y + roll_dy, obj_controls_sign))
@@ -425,6 +439,10 @@ else if (!is_attacking && !keyboard_check_pressed(ord("Z")))
         && !place_meeting(x + next_dx, y, obj_bat)
         && !place_meeting(x + next_dx, y, obj_orc)
         && !place_meeting(x + next_dx, y, obj_npc)
+        && !place_meeting(x + next_dx, y, obj_quest_knight)
+        && !place_meeting(x + next_dx, y, obj_quest_archer)
+        && !place_meeting(x + next_dx, y, obj_quest_spearman)
+        && !place_meeting(x + next_dx, y, obj_quest_captain)
         && !place_meeting(x + next_dx, y, obj_save_point)
         && !place_meeting(x + next_dx, y, obj_campfire)
         && !place_meeting(x + next_dx, y, obj_controls_sign))
@@ -440,6 +458,10 @@ else if (!is_attacking && !keyboard_check_pressed(ord("Z")))
         && !place_meeting(x, y + next_dy, obj_bat)
         && !place_meeting(x, y + next_dy, obj_orc)
         && !place_meeting(x, y + next_dy, obj_npc)
+        && !place_meeting(x, y + next_dy, obj_quest_knight)
+        && !place_meeting(x, y + next_dy, obj_quest_archer)
+        && !place_meeting(x, y + next_dy, obj_quest_spearman)
+        && !place_meeting(x, y + next_dy, obj_quest_captain)
         && !place_meeting(x, y + next_dy, obj_save_point)
         && !place_meeting(x, y + next_dy, obj_campfire)
         && !place_meeting(x, y + next_dy, obj_controls_sign))
@@ -759,3 +781,22 @@ camera_set_view_pos(
     x - cam_w * 0.5,
     y - cam_h * 0.5
 );
+// =====================================
+// QUEST TEST - F6
+// =====================================
+
+if (keyboard_check_pressed(vk_f6))
+{
+    if (captain_quest == 1)
+    {
+        quest_slime_kills = quest_slime_target;
+        quest_bat_kills = quest_bat_target;
+        quest_orc_kills = quest_orc_target;
+
+        slime_gel = quest_slime_gel_target;
+        bat_wing = quest_bat_wing_target;
+        orc_hide = quest_orc_hide_target;
+
+        show_debug_message("Captain's Trial Ready!");
+    }
+}

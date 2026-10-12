@@ -35,12 +35,47 @@ if (state == "dying")
     }
     death_anim_timer--;
     if (death_anim_timer <= 0)
+{
+    // =====================================
+    // CAPTAIN QUEST - SLIME KILL COUNT
+    // =====================================
+
+    var pl = instance_find(obj_player, 0);
+
+    if (pl != noone)
     {
-        if (irandom(99) < 70) instance_create_layer(x - 12, y, layer, obj_slime_gel);
-        if (irandom(99) < 30) instance_create_layer(x + 12, y, layer, obj_health_potion);
-        if (irandom(99) < 40) instance_create_layer(x, y + 12, layer, obj_gold);
-        instance_destroy();
+        // 퀘스트 진행 중일 때만 카운트
+        if (pl.captain_quest == 1)
+        {
+            pl.quest_slime_kills = min(
+                pl.quest_slime_kills + 1,
+                pl.quest_slime_target
+            );
+
+            show_debug_message(
+                "Captain Quest - Slime: "
+                + string(pl.quest_slime_kills)
+                + "/"
+                + string(pl.quest_slime_target)
+            );
+        }
     }
+
+    // =====================================
+    // 기존 아이템 드롭 (변경 없음)
+    // =====================================
+
+    if (irandom(99) < 70)
+        instance_create_layer(x - 12, y, layer, obj_slime_gel);
+
+    if (irandom(99) < 30)
+        instance_create_layer(x + 12, y, layer, obj_health_potion);
+
+    if (irandom(99) < 40)
+        instance_create_layer(x, y + 12, layer, obj_gold);
+
+    instance_destroy();
+}
     exit;
 }
 

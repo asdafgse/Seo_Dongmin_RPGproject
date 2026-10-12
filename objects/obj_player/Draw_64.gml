@@ -1,3 +1,9 @@
+// 메인 메뉴에서는 플레이어 HUD 숨기기
+if (room == rm_main_menu)
+{
+    exit;
+}
+
 // =====================================================
 // MAIN HUD FRAME
 // =====================================================
@@ -366,6 +372,20 @@ draw_sprite_ext(
     1
 );
 
+
+// =====================================================
+// SEAL STONE - SLOT 4 (Captain quest reward)
+// =====================================================
+if (variable_instance_exists(id, "has_seal_stone") && has_seal_stone)
+{
+    var seal_size = 36;
+    draw_sprite_stretched(
+        spr_seal_stone, 0,
+        slot_start_x + (slot_gap * 3) - seal_size * 0.5,
+        slot_y - seal_size * 0.5,
+        seal_size, seal_size
+    );
+}
 
 // =====================================================
 // SLIME GEL - SLOT 1
@@ -1062,3 +1082,265 @@ draw_set_alpha(1);
 draw_set_color(c_white);
 draw_set_halign(fa_left);
 draw_set_valign(fa_top);
+
+
+// =====================================================
+// KNIGHT QUEST TRACKER - BELOW MINIMAP
+// =====================================================
+if (knight_quest == 1)
+{
+    var knight_qx = map_x;
+    var knight_qy = map_y + map_h + 10;
+    var knight_qw = map_w;
+    var knight_qh = 85;
+
+    draw_set_alpha(1);
+    draw_set_color(c_black);
+    draw_rectangle(knight_qx, knight_qy, knight_qx + knight_qw, knight_qy + knight_qh, false);
+    draw_set_alpha(1);
+    draw_set_color(c_white);
+    draw_rectangle(knight_qx, knight_qy, knight_qx + knight_qw, knight_qy + knight_qh, true);
+
+    draw_set_font(fnt_hud);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_color(c_yellow);
+    draw_text(knight_qx + 10, knight_qy + 8, "Knight's Request");
+    draw_set_color(slime_gel >= 5 ? c_lime : c_white);
+    draw_text(knight_qx + 10, knight_qy + 34, "Slime Gel: " + string(min(slime_gel, 5)) + "/5");
+    draw_set_color(c_white);
+    draw_text(knight_qx + 10, knight_qy + 58, "Reward: 30 Gold");
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_alpha(1);
+    draw_set_color(c_white);
+}
+
+// =====================================================
+// ARCHER QUEST TRACKER - BELOW MINIMAP
+// =====================================================
+if (variable_instance_exists(id, "archer_quest") && archer_quest == 1)
+{
+    var archer_qx = map_x;
+    var archer_qy = map_y + map_h + 10;
+    var archer_qw = map_w;
+    var archer_qh = 85;
+    draw_set_alpha(1);
+    draw_set_color(c_black);
+    draw_rectangle(archer_qx, archer_qy, archer_qx + archer_qw, archer_qy + archer_qh, false);
+    draw_set_color(c_white);
+    draw_rectangle(archer_qx, archer_qy, archer_qx + archer_qw, archer_qy + archer_qh, true);
+    draw_set_font(fnt_hud);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_color(c_yellow);
+    draw_text(archer_qx + 10, archer_qy + 8, "Archer's Request");
+    draw_set_color(archer_bat_kills >= 5 ? c_lime : c_white);
+    draw_text(archer_qx + 10, archer_qy + 34, "Bat Kills: " + string(min(archer_bat_kills, 5)) + "/5");
+    draw_set_color(c_white);
+    draw_text(archer_qx + 10, archer_qy + 58, "Reward: 50 Gold");
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_alpha(1);
+    draw_set_color(c_white);
+}
+
+// =====================================================
+// CAPTAIN'S FINAL TRIAL - QUEST TRACKER
+// =====================================================
+
+// 퀘스트 진행 중일 때만 표시
+if (captain_quest == 1)
+{
+    // 미니맵 바로 아래
+    var quest_x = map_x;
+    var quest_y = map_y + map_h + 10;
+
+    var quest_w = map_w;
+    var quest_h = 245;
+
+    // 배경
+    draw_set_alpha(1);
+    draw_set_color(c_black);
+
+    draw_rectangle(
+        quest_x,
+        quest_y,
+        quest_x + quest_w,
+        quest_y + quest_h,
+        false
+    );
+
+    draw_set_alpha(1);
+
+    // 테두리
+    draw_set_color(c_white);
+
+    draw_rectangle(
+        quest_x,
+        quest_y,
+        quest_x + quest_w,
+        quest_y + quest_h,
+        true
+    );
+
+    // 텍스트 설정
+    draw_set_font(fnt_hud);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+
+    var tx = quest_x + 10;
+    var ty = quest_y + 10;
+    var gap = 22;
+
+    // 제목
+    draw_set_color(c_yellow);
+    draw_text(tx, ty, "Captain's Final Trial");
+
+    ty += 30;
+
+    // =====================================
+    // MONSTER KILLS
+    // =====================================
+
+    draw_set_color(c_yellow);
+    draw_text(tx, ty, "Defeat Monsters");
+    ty += gap;
+
+    draw_set_color(
+        quest_slime_kills >= quest_slime_target
+        ? c_lime : c_white
+    );
+
+    draw_text(
+        tx, ty,
+        "Slime: " + string(quest_slime_kills)
+        + "/" + string(quest_slime_target)
+    );
+
+    ty += gap;
+
+    draw_set_color(
+        quest_bat_kills >= quest_bat_target
+        ? c_lime : c_white
+    );
+
+    draw_text(
+        tx, ty,
+        "Bat: " + string(quest_bat_kills)
+        + "/" + string(quest_bat_target)
+    );
+
+    ty += gap;
+
+    draw_set_color(
+        quest_orc_kills >= quest_orc_target
+        ? c_lime : c_white
+    );
+
+    draw_text(
+        tx, ty,
+        "Orc: " + string(quest_orc_kills)
+        + "/" + string(quest_orc_target)
+    );
+
+    ty += 28;
+
+    // =====================================
+    // MATERIAL COLLECTION
+    // =====================================
+
+    draw_set_color(c_yellow);
+    draw_text(tx, ty, "Collect Materials");
+    ty += gap;
+
+    draw_set_color(
+        slime_gel >= quest_slime_gel_target
+        ? c_lime : c_white
+    );
+
+    draw_text(
+        tx, ty,
+        "Slime Gel: " + string(slime_gel)
+        + "/" + string(quest_slime_gel_target)
+    );
+
+    ty += gap;
+
+    draw_set_color(
+        bat_wing >= quest_bat_wing_target
+        ? c_lime : c_white
+    );
+
+    draw_text(
+        tx, ty,
+        "Bat Wing: " + string(bat_wing)
+        + "/" + string(quest_bat_wing_target)
+    );
+
+    ty += gap;
+
+    draw_set_color(
+        orc_hide >= quest_orc_hide_target
+        ? c_lime : c_white
+    );
+
+    draw_text(
+        tx, ty,
+        "Orc Hide: " + string(orc_hide)
+        + "/" + string(quest_orc_hide_target)
+    );
+
+    // =====================================
+    // QUEST COMPLETE CHECK
+    // =====================================
+
+    var kills_done =
+        quest_slime_kills >= quest_slime_target
+        && quest_bat_kills >= quest_bat_target
+        && quest_orc_kills >= quest_orc_target;
+
+    var materials_done =
+        slime_gel >= quest_slime_gel_target
+        && bat_wing >= quest_bat_wing_target
+        && orc_hide >= quest_orc_hide_target;
+
+    if (kills_done && materials_done)
+    {
+        draw_set_color(c_lime);
+
+        draw_text(
+            tx,
+            quest_y + quest_h - 22,
+            "Return to Captain!"
+        );
+    }
+
+    // Draw 설정 복구
+    draw_set_alpha(1);
+    draw_set_color(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+}
+
+// =====================================
+// SPEARMAN QUEST - MINIMAP TRACKER
+// =====================================
+if (variable_instance_exists(id, "spearman_quest") && spearman_quest == 1)
+{
+    var sq_x = 18;
+    var sq_y = 185; // Adjust to directly below your minimap if needed
+    var sq_w = 205;
+    var sq_h = 67;
+    draw_set_alpha(1);
+    draw_set_color(c_black);
+    draw_rectangle(sq_x, sq_y, sq_x + sq_w, sq_y + sq_h, false);
+    draw_set_color(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_text(sq_x + 10, sq_y + 8, "Spearman: Orc Hunt");
+    draw_text(sq_x + 10, sq_y + 29, "Orc Kills: " + string(spearman_orc_kills) + "/3");
+    draw_text(sq_x + 10, sq_y + 48, spearman_orc_kills >= 3 ? "Return to Spearman!" : "Reward: 2 Potions");
+    draw_set_color(c_white);
+    draw_set_alpha(1);
+}

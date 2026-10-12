@@ -35,13 +35,60 @@ if (state == "dying")
         image_index = last_frame;
         death_hold++;
         if (death_hold >= death_hold_max && !death_drop_done)
+{
+    death_drop_done = true;
+
+    // =====================================
+    // CAPTAIN QUEST - ORC KILL COUNT
+    // =====================================
+
+    var player = instance_find(obj_player, 0);
+
+    if (player != noone)
+    {
+        if (player.captain_quest == 1)
         {
-            death_drop_done = true;
-            if (irandom(99) < 50) instance_create_layer(x, y, layer, obj_gold);
-            if (irandom(99) < 20) instance_create_layer(x + 12, y, layer, obj_health_potion);
-            if (irandom(99) < 70) instance_create_layer(x - 12, y, layer, obj_orc_hide);
-            instance_destroy();
+            player.quest_orc_kills = min(
+                player.quest_orc_kills + 1,
+                player.quest_orc_target
+            );
+
+            show_debug_message(
+                "Captain Quest - Orc: "
+                + string(player.quest_orc_kills)
+                + "/"
+                + string(player.quest_orc_target)
+            );
         }
+    }
+
+    // Spearman quest - count this orc once on death
+    if (player != noone && variable_instance_exists(player, "spearman_quest"))
+    {
+        if (player.spearman_quest == 1)
+        {
+            player.spearman_orc_kills = min(3, player.spearman_orc_kills + 1);
+        }
+    }
+
+    // =====================================
+    // 기존 아이템 드롭 (변경 없음)
+    // =====================================
+
+    // 골드 50%
+    if (irandom(99) < 50)
+        instance_create_layer(x, y, layer, obj_gold);
+
+    // 포션 20%
+    if (irandom(99) < 20)
+        instance_create_layer(x + 12, y, layer, obj_health_potion);
+
+    // 오크 가죽 70%
+    if (irandom(99) < 70)
+        instance_create_layer(x - 12, y, layer, obj_orc_hide);
+
+    instance_destroy();
+}
     }
     exit;
 }
